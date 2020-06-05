@@ -1,4 +1,4 @@
-# cvector
+# c-vector
 
 A dynamic array based on [stb stretchy buffer](https://github.com/nothings/stb/blob/master/stretchy_buffer.h).
 
