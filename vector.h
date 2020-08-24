@@ -67,7 +67,7 @@ struct vector__header {
 /* Frees a vector. */
 #define vector_free(v) ((v) ? (free(vector__raw(v)), 0) : 0)
 
-void *
+static void *
 vector__resize_f(void *data, size_t elems, size_t elem_size) {
   size_t *b = (size_t *)realloc(data ? vector__raw(data) : NULL, elems*elem_size + sizeof(struct vector__header));
   if (b) {
@@ -86,7 +86,7 @@ vector__resize_f(void *data, size_t elems, size_t elem_size) {
   }
 }
 
-void *
+static void *
 vector__grow_f(void *data, size_t size, size_t elem_size) {
   size_t min_needed = vector_size(data) + size;
   size_t default_growth = vector_capacity(data) << 1;
@@ -94,14 +94,14 @@ vector__grow_f(void *data, size_t size, size_t elem_size) {
   return vector__resize_f(data, new_capacity, elem_size);
 }
 
-void
+static void
 vector__shift(char *data, size_t index, long diff, size_t elem_size) {
   char *at = data + index * elem_size;
   size_t count = vector_size(data) - index;
   memmove(at + diff * elem_size, at, count * elem_size);
 }
 
-void *
+static void *
 vector__create(size_t capacity, size_t elem_size) {
   size_t *v = (size_t *)malloc(capacity * elem_size + sizeof(struct vector__header));
   v[0] = 0;
