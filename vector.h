@@ -13,6 +13,15 @@ struct vector__header {
   char data[];
 };
 
+/**
+ * Parameters:
+ *  v - vector
+ *  e - element
+ *  n - number of elements
+ *  i - index of element
+ *  T - type
+ */
+
 #define vector__raw(v) ((size_t *)(void *)(v) - 2)
 #define vector__get(v) ((struct vector__header *)vector__raw(v))
 #define vector__size(v) (vector__get(v)->size)
@@ -26,22 +35,24 @@ struct vector__header {
 #define vector_size(v) ((v) == 0 ? 0 : vector__size(v))
 /* Gets the number of elements that fit in the vector. */
 #define vector_capacity(v) ((v) == 0 ? 0 : vector__capacity(v))
+/* Checks if the vector is empty. */
+#define vector_empty(v) ((v) == 0 ? 1 : vector__size(v) == 0)
 
-/* Gets the last element of the vector. */
-#define vector_last(v) ((v) == 0 ? 0 : ((v) + (vector__size(v) - 1)))
+/* Gets a pointer to the last element of the vector. */
+#define vector_back(v) ((v) == 0 ? 0 : ((v) + (vector__size(v) - 1)))
 /* Appends an element to the vector. */
 #define vector_push(v, e) (vector__maybegrow(v, 1), (v)[vector__size(v)++] = (e))
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v) ((v)[--vector__size(v)])
 /* Inserts a new element into the vector. */
-#define vector_insert(v, i, e) (((v) == 0 || (size_t)i >= vector_size(v)) ? 0 : ( \
-  vector__maybegrow((v), 1),                                                      \
-  vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))),                         \
-  (v)[(i)] = (e),                                                                 \
+#define vector_insert(v, i, e) (((v) == 0 || (size_t)(i) >= vector_size(v)) ? 0 : ( \
+  vector__maybegrow((v), 1),                                                        \
+  vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))),                           \
+  (v)[(i)] = (e),                                                                   \
   ++vector__size(v)))
 /* Removes an element from the vector. */
-#define vector_remove(v, i) (((v) == 0 || (size_t)i >= vector_size(v)) ? 0 : ( \
-  vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))),                   \
+#define vector_remove(v, i) (((v) == 0 || (size_t)(i) >= vector_size(v)) ? 0 : ( \
+  vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))),                     \
   --vector__size(v)))
 
 /* Resizes the vector. */
@@ -52,7 +63,7 @@ struct vector__header {
 #define vector_shrink_to_fit(v) vector_resize((v), vector_size(v))
 
 /* Creates a new vector. (optional) */
-#define vector_create(T, c) ((T *)vector__create(c, sizeof(T)))
+#define vector_create(T, n) ((T *)vector__create((n), sizeof(T)))
 /* Frees a vector. */
 #define vector_free(v) ((v) ? (free(vector__raw(v)), 0) : 0)
 
