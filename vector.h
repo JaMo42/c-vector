@@ -13,6 +13,20 @@ struct vector__header {
   char data[];
 };
 
+#ifdef __cplusplus
+# define vector__decltype(x) decltype(x)
+# define VECTOR__HAS_DECLTYPE
+#else // __cplusplus
+# ifdef __GNUC__
+#  ifdef __clang__
+#   define vector__decltype(x) __typeof__(x)
+#  else // __clang__
+#   define vector__decltype(x) typeof(x)
+#  endif // __clang__
+#  define VECTOR__HAS_DECLTYPE
+# endif // __GNUC__
+#endif // __cplusplus
+
 /**
  * Parameters:
  *  v - vector
@@ -22,37 +36,41 @@ struct vector__header {
  *  T - type
  */
 
-#define vector__raw(v) ((size_t *)(void *)(v) - 2)
+#define vector__raw(v) ((size_t *)(v) - 2)
 #define vector__get(v) ((struct vector__header *)vector__raw(v))
 #define vector__size(v) (vector__get(v)->size)
 #define vector__capacity(v) (vector__get(v)->capacity)
 
 #define vector__grow(v, n) (*((void **)&(v)) = vector__grow_f((v), (n), sizeof(*(v))))
-#define vector__needgrow(v, n) ((v) == 0 || vector__size(v) + (n) >= vector__capacity(v))
+#define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) >= vector__capacity(v))
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
 
 /* Gets the number of elements in the vector. */
-#define vector_size(v) ((v) == 0 ? 0 : vector__size(v))
+#define vector_size(v) ((v) == NULL ? 0 : vector__size(v))
 /* Gets the number of elements that fit in the vector. */
-#define vector_capacity(v) ((v) == 0 ? 0 : vector__capacity(v))
+#define vector_capacity(v) ((v) == NULL ? 0 : vector__capacity(v))
 /* Checks if the vector is empty. */
-#define vector_empty(v) ((v) == 0 ? 1 : vector__size(v) == 0)
+#define vector_empty(v) ((v) == NULL ? 1 : vector__size(v) == 0)
 
 /* Gets a pointer to the last element of the vector. */
-#define vector_back(v) ((v) == 0 ? 0 : ((v) + (vector__size(v) - 1)))
+#define vector_back(v) ((v) == NULL ? 0 : ((v) + (vector__size(v) - 1)))
 /* Appends an element to the vector. */
-#define vector_push(v, e) (vector__maybegrow(v, 1), (v)[vector__size(v)++] = (e))
+#define vector_push(v, e) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (e))
+
+#ifdef VECTOR__HAS_DECLTYPE
+#define vector_emplace(v, ...) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (vector__decltype(*v)) { __VA_ARGS__ })
+#endif
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v) ((v)[--vector__size(v)])
 /* Inserts a new element into the vector. */
-#define vector_insert(v, i, e) (((v) == 0 || (size_t)(i) >= vector_size(v)) ? 0 : ( \
-  vector__maybegrow((v), 1),                                                        \
-  vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))),                           \
-  (v)[(i)] = (e),                                                                   \
+#define vector_insert(v, i, e) (((v) == NULL || (size_t)(i) >= vector_size(v)) ? 0 : ( \
+  vector__maybegrow((v), 1),                                                           \
+  vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))),                              \
+  (v)[(i)] = (e),                                                                      \
   ++vector__size(v)))
 /* Removes an element from the vector. */
-#define vector_remove(v, i) (((v) == 0 || (size_t)(i) >= vector_size(v)) ? 0 : ( \
-  vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))),                     \
+#define vector_remove(v, i) (((v) == NULL || (size_t)(i) >= vector_size(v)) ? 0 : ( \
+  vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))),                        \
   --vector__size(v)))
 
 /* Resizes the vector. */
@@ -97,7 +115,7 @@ vector__grow_f(void *data, size_t size, size_t elem_size) {
 static void
 vector__shift(char *data, size_t index, long diff, size_t elem_size) {
   char *at = data + index * elem_size;
-  size_t count = vector_size(data) - index;
+  size_t count = vector__size(data) - index;
   memmove(at + diff * elem_size, at, count * elem_size);
 }
 

@@ -22,6 +22,13 @@ void print_vector(int *data) {
   }
 }
 
+struct MyStruct
+{
+  int i;
+  float f;
+  const char *s;
+};
+
 su_module(vector_tests, {
   int *ivec = NULL;
 
@@ -43,6 +50,14 @@ su_module(vector_tests, {
     for (int i = 0; i < ITERATIONS; ++i) {
       su_assert_eq(ivec[i], i);
     }
+  })
+
+  su_test(vector_emplace, {
+    struct MyStruct *my_vec = NULL;
+    vector_emplace(my_vec, .i = 1, .f = 1.0, .s = "one");
+    vector_emplace(my_vec, .i = 2, .f = 2.0, .s = "two");
+    vector_emplace(my_vec, .i = 3, .f = 3.0, .s = "three");
+    vector_free(my_vec);
   })
 
   su_test(vector_pop, {
