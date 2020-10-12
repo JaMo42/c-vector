@@ -52,8 +52,10 @@ struct vector__header {
 /* Checks if the vector is empty. */
 #define vector_empty(v) ((v) == NULL ? 1 : vector__size(v) == 0)
 
-/* Gets a pointer to the last element of the vector. */
-#define vector_back(v) ((v) == NULL ? 0 : ((v) + (vector__size(v) - 1)))
+/* Gets the last element of the vector. */
+#define vector_back(v) ((v)[vector__size(v) - 1])
+/* Gets a pointer past the last element of the vector */
+#define vector_end(v) ((v) == NULL ? NULL : ((v) + vector__size(v)))
 /* Appends an element to the vector. */
 #define vector_push(v, e) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (e))
 
