@@ -109,7 +109,7 @@ Most of these may be called with `v` being a null pointer, in this case they wil
 
 - Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`
 
-The only exceptions are `vector_back` and `vector_pop` which will case a segmentation fault.
+The only exceptions are `vector_back` and `vector_pop` which will cause a segmentation fault.
 
 ### Availability
 
