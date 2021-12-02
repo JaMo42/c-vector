@@ -51,8 +51,7 @@ struct vector__header {
  *  ... - initializer list elements
  */
 
-#define vector__raw(v) ((size_t *)(v) - 2)
-#define vector__get(v) ((struct vector__header *)vector__raw(v))
+#define vector__get(v) (((struct vector__header *)(v)) - 1)
 #define vector__size(v) (vector__get(v)->size)
 #define vector__capacity(v) (vector__get(v)->capacity)
 
@@ -173,15 +172,15 @@ struct vector__header {
 
 /* Frees the vector. */
 #define vector_free(v)\
-  ((v) ? (free(vector__raw(v)), 0) : 0)
+  ((v) ? (free(vector__get(v)), 0) : 0)
 
 
 
 static void *
 vector__resize_f(void *data, size_t elems, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)realloc (
-    data ? vector__raw (data) : NULL,
-    elems*elem_size + sizeof (struct vector__header));
+    data ? vector__get (data) : NULL,
+    elems * elem_size + sizeof (struct vector__header));
   if (v)
     {
       if (!data)
@@ -215,10 +214,11 @@ vector__shift(char *data, size_t index, long diff, size_t elem_size) {
 
 VECTOR__MAYBE_UNUSED static void *
 vector__create(size_t capacity, size_t elem_size) {
-  size_t *v = (size_t *)malloc(capacity * elem_size + sizeof(struct vector__header));
-  v[0] = 0;
-  v[1] = capacity;
-  return (void *)(v + 2);
+  struct vector__header *v = (struct vector__header *)malloc(
+    capacity * elem_size + sizeof(struct vector__header));
+  v->size = 0;
+  v->capacity = capacity;
+  return (void *)v->data;
 }
 
 #endif /* !VECTOR_H */
