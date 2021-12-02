@@ -1,5 +1,5 @@
 /* Based on stb stretchy buffer
- * https://github.com/nothings/stb/blob/master/stretchy_buffer.h
+ * https://github.com/nothings/stb/blob/master/stb_ds.h
  */
 #ifndef VECTOR_H
 #define VECTOR_H
@@ -13,29 +13,33 @@ struct vector__header {
   char data[];
 };
 
-#ifdef __cplusplus
-# define vector__decltype(x) decltype(x)
-# define VECTOR__HAS_DECLTYPE
-#else /* __cplusplus */
-# ifdef __GNUC__
-#  ifdef __clang__
-#   define vector__decltype(x) __typeof__(x)
-#  else /* __clang__ */
-#   define vector__decltype(x) typeof(x)
-#  endif /* __clang__ */
-#  define VECTOR__HAS_DECLTYPE
-# endif /* __GNUC__ */
-#endif /* __cplusplus */
+#ifndef VECTOR__DECLTYPE
+# ifdef __cplusplus
+#  define VECTOR__DECLTYPE(x) decltype(x)
+# else /* __cplusplus */
+#  ifdef __GNUC__
+#   define VECTOR__DECLTYPE(x) typeof(x)
+#  endif /* __GNUC__ */
+# endif /* __cplusplus */
+#endif /* VECTOR__DECLTYPE */
 
-#ifdef __cplusplus
-# define VECTOR__MAYBE_UNUSED [[maybe_unused]]
-#else /* __cplusplus */
+#ifndef VECTOR__MAYBE_UNSUED
+# ifdef __cplusplus
+#  define VECTOR__MAYBE_UNUSED [[maybe_unused]]
+# else /* __cplusplus */
+#  ifdef __GNUC__
+#   define VECTOR__MAYBE_UNUSED __attribute__((unused))
+#  else /* __GNUC__ */
+#   define VECTOR__MAYBE_UNUSED
+#  endif /* __GNUC__ */
+# endif /* __cplusplus */
+#endif /* VECTOR__MAYBE_UNUSED */
+
+#ifndef VECTOR__HAS_STATEMENT_EXPRS
 # ifdef __GNUC__
-#  define VECTOR__MAYBE_UNUSED __attribute__((unused))
-# else /* __GNUC__ */
-#  define VECTOR__MAYBE_UNUSED
+#  define VECTOR__HAS_STATEMENT_EXPRS
 # endif /* __GNUC__ */
-#endif /* __cplusplus */
+#endif /* VECTOR__HAS_STATEMENT_EXPRS */
 
 /**
  * Parameters:
@@ -73,19 +77,19 @@ struct vector__header {
 #define vector_empty(v)\
   ((v) == NULL ? 1 : vector__size(v) == 0)
 
-/* Resizes the vector the fit at least `n` elements */
+/* Increases the capacity of the vector the fit at least N elements. */
 #define vector_reserve(v, n)\
   ((n) > vector_capacity(v) ? vector_resize((v), (n)) : 0)
 
-/* Resize the vector the its number of elements */
+/* Reduces the vectors capacity to its size. */
 #define vector_shrink_to_fit(v)\
-  vector_resize((v), vector_size(v))
+  ((v) == NULL ? NULL : vector_resize((v), vector_size(v)))
 
 /* Gets the last element of the vector. */
 #define vector_back(v)\
   ((v)[vector__size(v) - 1])
 
-/* Gets a pointer past the last element of the vector */
+/* Gets a pointer past the last element of the vector. */
 #define vector_end(v)\
   ((v) == NULL ? NULL : ((v) + vector__size(v)))
 
@@ -94,20 +98,20 @@ struct vector__header {
   (vector__maybegrow((v), 1),    \
    (v)[vector__size(v)++] = (e))
 
-#ifdef VECTOR__HAS_DECLTYPE
+#ifdef VECTOR__DECLTYPE
 /* For vectors of structures or unions, appends a new element to the vector and
    constructs it in-place, variadic arguments are passed as initializer list
    for struct or union. */
 #define vector_emplace_back(v, ...)                                 \
   (vector__maybegrow((v), 1),                                       \
-   (v)[vector__size(v)++] = (vector__decltype(*v)) { __VA_ARGS__ })
+   (v)[vector__size(v)++] = (VECTOR__DECLTYPE(*v)) { __VA_ARGS__ })
 #endif
 
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v)\
   ((v)[--vector__size(v)])
 
-/* Inserts a new element into the vector. */
+/* Inserts a new element into the vector at position I. */
 #define vector_insert(v, i, e)                                \
   (((v) == NULL || (size_t)(i) >= vector_size(v))             \
    ? 0                                                        \
@@ -116,25 +120,25 @@ struct vector__header {
       (v)[(i)] = (e),                                         \
       ++vector__size(v)))
 
-#ifdef VECTOR__HAS_DECLTYPE
-/* Like vector_emplace_back but element is inserted at position I. */
+#ifdef VECTOR__DECLTYPE
+/* Like vector_emplace_back but the new element is inserted at position I. */
 #define vector_emplace(v, i, ...)                                 \
   (((v) == NULL || (size_t)(i) >= (vector__size (v)))             \
    ? 0                                                            \
    : (vector__maybegrow ((v), 1),                                 \
       vector__shift ((char *)(void *)(v), (i), 1, sizeof (*(v))), \
-      (v)[(i)] = (vector__decltype (*v)) { __VA_ARGS__ },         \
+      (v)[(i)] = (VECTOR__DECLTYPE (*v)) { __VA_ARGS__ },         \
       ++vector__size (v)))
 #endif
 
-/* Removes an element from the vector. */
+/* Removes the element at position I from the vector. */
 #define vector_remove(v, i)                                        \
   (((v) == NULL || (size_t)(i) >= vector_size(v))                  \
    ? 0                                                             \
    : (vector__shift((char *)(void *)(v), (i+1), -1, sizeof(*(v))), \
       --vector__size(v)))
 
-/* Removes elements from the vector */
+/* Removes N elements from the vector, starting at position I. */
 #define vector_erase(v, i, n)                                               \
   (((v) == NULL || (size_t)(i) >= (vector__size (v) - (n)))                 \
    ? 0                                                                      \
@@ -149,25 +153,25 @@ struct vector__header {
 #define vector_resize(v, n)\
   (*((void **)&(v)) = vector__resize_f((v), (n), sizeof(*(v))))
 
-/* Creates a new vector. (optional) */
+/* Creates a new empty vector. */
 #define vector_create(T, n)\
   ((T *)vector__create((n), sizeof(T)))
 
-#ifdef __GNUC__
+#ifdef VECTOR__HAS_STATEMENT_EXPRS
 /* Creates a new vector with elements {X, ...} and the type of X as element
    type. */
 #define vector_init(x, ...)                                                \
   ({                                                                       \
-    vector__decltype (x) __t[] = { x __VA_OPT__ (,) __VA_ARGS__ };         \
+    VECTOR__DECLTYPE (x) __t[] = { x __VA_OPT__ (,) __VA_ARGS__ };         \
     size_t __l = sizeof (__t) / sizeof (x);                                \
-    vector__decltype (x) *__v = vector_create (vector__decltype (x), __l); \
+    VECTOR__DECLTYPE (x) *__v = vector_create (VECTOR__DECLTYPE (x), __l); \
     memcpy (__v, __t, __l * sizeof (x));                                   \
     vector__size (__v) = __l;                                              \
     __v;                                                                   \
   })
 #endif
 
-/* Frees a vector. */
+/* Frees the vector. */
 #define vector_free(v)\
   ((v) ? (free(vector__raw(v)), 0) : 0)
 
