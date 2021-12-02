@@ -116,6 +116,13 @@ su_module(vector_tests, {
     vector_free (my_vec);
   })
 
+  su_test ("vector_erase", {
+    size_t nefore = vector_size (ivec);
+    vector_erase (ivec, 4, 5);
+    su_assert_eq (nefore-5, vector_size (ivec));
+    su_assert_eq (ivec[4], 30);
+  })
+
   su_test("vector_shrink_to_fit", {
     vector_shrink_to_fit(ivec);
     su_assert_eq(vector_size(ivec), vector_capacity(ivec));

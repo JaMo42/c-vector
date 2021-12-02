@@ -116,14 +116,14 @@ struct vector__header {
 #define vector_remove(v, i)                                      \
   (((v) == NULL || (size_t)(i) >= vector_size(v))                \
    ? 0                                                           \
-   : (vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))), \
+   : (vector__shift((char *)(void *)(v), (i+1), -1, sizeof(*(v))), \
       --vector__size(v)))
 
 /* Removes elements from the vector */
 #define vector_erase(v, i, n)                                               \
   (((v) == NULL || (size_t)(i) >= (vector__size (v) - (n)))                 \
    ? 0                                                                      \
-   : (vector__shift ((char *)(void *)(v), (i)+(n), 0ULL-(n), sizeof (*(v))) \
+   : (vector__shift ((char *)(void *)(v), (i)+(n), 0LL-(n), sizeof (*(v))), \
       vector__size (v) -= (n)))
 
 /* Clears the contents of the vector. */
