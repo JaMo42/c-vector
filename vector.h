@@ -42,9 +42,14 @@ struct vector__header {
 #define vector__size(v) (vector__get(v)->size)
 #define vector__capacity(v) (vector__get(v)->capacity)
 
+/* Grow the vector so it can fit at least N more items. */
 #define vector__grow(v, n) (*((void **)&(v)) = vector__grow_f((v), (n), sizeof(*(v))))
+/* Check if the vector needs to grow to accommodate N more items. */
 #define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) >= vector__capacity(v))
+/* Ensure that the vector can fit N more items, grow it if neccessary. */
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
+
+
 
 /* Gets the number of elements in the vector. */
 #define vector_size(v)\
@@ -113,9 +118,9 @@ struct vector__header {
 #endif
 
 /* Removes an element from the vector. */
-#define vector_remove(v, i)                                      \
-  (((v) == NULL || (size_t)(i) >= vector_size(v))                \
-   ? 0                                                           \
+#define vector_remove(v, i)                                        \
+  (((v) == NULL || (size_t)(i) >= vector_size(v))                  \
+   ? 0                                                             \
    : (vector__shift((char *)(void *)(v), (i+1), -1, sizeof(*(v))), \
       --vector__size(v)))
 
