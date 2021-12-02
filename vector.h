@@ -56,7 +56,7 @@ struct vector__header {
 #define vector__grow(v, n) (*((void **)&(v)) = vector__grow_f((v), (n), sizeof(*(v))))
 /* Check if the vector needs to grow to accommodate N more items. */
 #define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) >= vector__capacity(v))
-/* Ensure that the vector can fit N more items, grow it if neccessary. */
+/* Ensure that the vector can fit N more items, grow it if necessary. */
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
 
 
@@ -73,7 +73,7 @@ struct vector__header {
 #define vector_empty(v)\
   ((v) == NULL ? 1 : vector__size(v) == 0)
 
-/* Resizes the vector the fit atleast `n` elements */
+/* Resizes the vector the fit at least `n` elements */
 #define vector_reserve(v, n)\
   ((n) > vector_capacity(v) ? vector_resize((v), (n)) : 0)
 
@@ -155,7 +155,7 @@ struct vector__header {
 
 #ifdef __GNUC__
 /* Creates a new vector with elements {X, ...} and the type of X as element
-   rype. */
+   type. */
 #define vector_init(x, ...)                                                \
   ({                                                                       \
     vector__decltype (x) __t[] = { x __VA_OPT__ (,) __VA_ARGS__ };         \
