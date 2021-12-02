@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include "smallunit.h"
 #include "vector.h"
-SU_SOURCE;
 
 #define ITERATIONS 20
 
@@ -32,7 +31,7 @@ struct MyStruct
 su_module(vector_tests, {
   int *ivec = NULL;
 
-  su_test(vector_create, {
+  su_test("vector_create", {
     int *a = NULL;
     vector_reserve(a, 10);
     int *b = vector_create(int, 10);
@@ -41,7 +40,7 @@ su_module(vector_tests, {
     vector_free(b);
   })
 
-  su_test(vector_push, {
+  su_test("vector_push", {
     for (int i = 0; i < ITERATIONS; ++i) {
       vector_push(ivec, i);
     }
@@ -52,7 +51,7 @@ su_module(vector_tests, {
     }
   })
 
-  su_test(vector_emplace, {
+  su_test("vector_emplace", {
     struct MyStruct *my_vec = NULL;
     vector_emplace(my_vec, .i = 1, .f = 1.0, .s = "one");
     vector_emplace(my_vec, .i = 2, .f = 2.0, .s = "two");
@@ -60,7 +59,7 @@ su_module(vector_tests, {
     vector_free(my_vec);
   })
 
-  su_test(vector_pop, {
+  su_test("vector_pop", {
     su_assert_eq(vector_pop(ivec), ITERATIONS - 1);
     for (int i = 0; i < (ITERATIONS/2 - 2); ++i) {
       (void)vector_pop(ivec);
@@ -69,7 +68,7 @@ su_module(vector_tests, {
     su_assert_eq(vector_size(ivec), ITERATIONS/2);
   })
 
-  su_test(vector_insert, {
+  su_test("vector_insert", {
     vector_insert(ivec, 8, 30);
     vector_insert(ivec, 4, 20);
     vector_insert(ivec, 2, 10);
@@ -79,7 +78,7 @@ su_module(vector_tests, {
     su_assert_eq(ivec[2], 10);
   })
 
-  su_test(vector_remove, {
+  su_test("vector_remove", {
     vector_remove(ivec, 9);
     vector_remove(ivec, 4);
     vector_remove(ivec, 1);
@@ -88,7 +87,7 @@ su_module(vector_tests, {
     su_assert_eq(ivec[1], 10);
   })
 
-  su_test(vector_shrink_to_fit, {
+  su_test("vector_shrink_to_fit", {
     vector_shrink_to_fit(ivec);
     su_assert_eq(vector_size(ivec), vector_capacity(ivec));
   })

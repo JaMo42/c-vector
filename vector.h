@@ -58,7 +58,9 @@ struct vector__header {
 #define vector_end(v) ((v) == NULL ? NULL : ((v) + vector__size(v)))
 /* Appends an element to the vector. */
 #define vector_push(v, e) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (e))
-
+/* For vectors of structures or unions, appends a new element to the vector and
+   constructs it in-place, variadic arguments are passed as initializer list
+   for struct or union. */
 #ifdef VECTOR__HAS_DECLTYPE
 #define vector_emplace(v, ...) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (vector__decltype(*v)) { __VA_ARGS__ })
 #endif
