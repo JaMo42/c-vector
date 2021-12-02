@@ -58,6 +58,7 @@ su_module(vector_tests, {
     }
   })
 
+#ifdef vector_emplace_back
   su_test("vector_emplace_back", {
     struct MyStruct *my_vec = NULL;
     vector_emplace_back(my_vec, .i = 1, .f = 1.0, .s = "one");
@@ -65,6 +66,7 @@ su_module(vector_tests, {
     vector_emplace_back(my_vec, 3, 3.0, "three");
     vector_free(my_vec);
   })
+#endif
 
   su_test("vector_pop", {
     su_assert_eq(vector_pop(ivec), ITERATIONS - 1);
@@ -103,6 +105,7 @@ su_module(vector_tests, {
     su_assert_eq (ivec[7], 77);
   })
 
+#ifdef vector_emplace
   su_test ("vector_emplace", {
     struct MyStruct *my_vec = NULL;
     vector_emplace_back (my_vec, 1, 1.0, "one");
@@ -115,6 +118,7 @@ su_module(vector_tests, {
     su_assert_eq (my_vec[3].i, 3);
     vector_free (my_vec);
   })
+#endif
 
   su_test ("vector_erase", {
     size_t nefore = vector_size (ivec);
@@ -140,6 +144,21 @@ su_module(vector_tests, {
     ivec[39] = 0xabc;
     su_assert_eq (ivec[39], 0xabc);
   })
+
+#ifdef vector_init
+  su_test ("vector_init", {
+    int *v = vector_init (1, 2, 3, 4, 5, 6);
+    su_assert_eq (vector_size (v), 6);
+    su_assert (vector_capacity (v) >= 6);
+    su_assert_eq (v[0], 1);
+    su_assert_eq (v[1], 2);
+    su_assert_eq (v[2], 3);
+    su_assert_eq (v[3], 4);
+    su_assert_eq (v[4], 5);
+    su_assert_eq (v[5], 6);
+    vector_free (v);
+  })
+#endif
 
   vector_free(ivec);
 })

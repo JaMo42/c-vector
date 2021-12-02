@@ -16,16 +16,26 @@ struct vector__header {
 #ifdef __cplusplus
 # define vector__decltype(x) decltype(x)
 # define VECTOR__HAS_DECLTYPE
-#else // __cplusplus
+#else /* __cplusplus */
 # ifdef __GNUC__
 #  ifdef __clang__
 #   define vector__decltype(x) __typeof__(x)
-#  else // __clang__
+#  else /* __clang__ */
 #   define vector__decltype(x) typeof(x)
-#  endif // __clang__
+#  endif /* __clang__ */
 #  define VECTOR__HAS_DECLTYPE
-# endif // __GNUC__
-#endif // __cplusplus
+# endif /* __GNUC__ */
+#endif /* __cplusplus */
+
+#ifdef __cplusplus
+# define VECTOR__MAYBE_UNUSED [[maybe_unused]]
+#else /* __cplusplus */
+# ifdef __GNUC__
+#  define VECTOR__MAYBE_UNUSED __attribute__((unused))
+# else /* __GNUC__ */
+#  define VECTOR__MAYBE_UNUSED
+# endif /* __GNUC__ */
+#endif /* __cplusplus */
 
 /**
  * Parameters:
@@ -143,9 +153,24 @@ struct vector__header {
 #define vector_create(T, n)\
   ((T *)vector__create((n), sizeof(T)))
 
+#ifdef __GNUC__
+/* Creates a new vector with elements {X, ...} and the type of X as element
+   rype. */
+#define vector_init(x, ...)                                                \
+  ({                                                                       \
+    vector__decltype (x) __t[] = { x __VA_OPT__ (,) __VA_ARGS__ };         \
+    size_t __l = sizeof (__t) / sizeof (x);                                \
+    vector__decltype (x) *__v = vector_create (vector__decltype (x), __l); \
+    memcpy (__v, __t, __l * sizeof (x));                                   \
+    vector__size (__v) = __l;                                              \
+    __v;                                                                   \
+  })
+#endif
+
 /* Frees a vector. */
 #define vector_free(v)\
   ((v) ? (free(vector__raw(v)), 0) : 0)
+
 
 
 static void *
@@ -169,7 +194,7 @@ vector__resize_f(void *data, size_t elems, size_t elem_size) {
     }
 }
 
-static void *
+VECTOR__MAYBE_UNUSED static void *
 vector__grow_f(void *data, size_t size, size_t elem_size) {
   size_t min_needed = vector_size(data) + size;
   size_t default_growth = vector_capacity(data) << 1;
@@ -177,14 +202,14 @@ vector__grow_f(void *data, size_t size, size_t elem_size) {
   return vector__resize_f(data, new_capacity, elem_size);
 }
 
-static void
+VECTOR__MAYBE_UNUSED static void
 vector__shift(char *data, size_t index, long diff, size_t elem_size) {
   char *at = data + index * elem_size;
   size_t count = vector__size(data) - index;
   memmove(at + diff * elem_size, at, count * elem_size);
 }
 
-static void *
+VECTOR__MAYBE_UNUSED static void *
 vector__create(size_t capacity, size_t elem_size) {
   size_t *v = (size_t *)malloc(capacity * elem_size + sizeof(struct vector__header));
   v[0] = 0;
