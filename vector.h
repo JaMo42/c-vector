@@ -74,10 +74,10 @@ struct vector__header {
   ++vector__size(v)))
 #ifdef VECTOR__HAS_DECLTYPE
 /* Like vector_emplace_back but element is inserted at position I. */
-#define vector_emplace(v, i, ...) (((v) == NULL || (size_t)(i) >= (vector__size (v)) ? 0 : ( \
-  vector__maybegrow ((v), 1),                                                                \
-  vector__shift ((char *)(void *)(v), (i), 1, sizeof (*(v))),                                \
-  (v)[(i)] = (vector__decltype (*v)) { __VA_ARGS__ },                                        \
+#define vector_emplace(v, i, ...) (((v) == NULL || (size_t)(i) >= (vector__size (v))) ? 0 : ( \
+  vector__maybegrow ((v), 1),                                                                 \
+  vector__shift ((char *)(void *)(v), (i), 1, sizeof (*(v))),                                 \
+  (v)[(i)] = (vector__decltype (*v)) { __VA_ARGS__ },                                         \
   ++vector__size (v)))
 #endif
 /* Removes an element from the vector. */

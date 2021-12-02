@@ -40,6 +40,13 @@ su_module(vector_tests, {
     vector_free(b);
   })
 
+  su_test ("vector_reserve", {
+    int *v = vector_create (int, 5);
+    vector_reserve (v, 20);
+    su_assert (vector_capacity (v) >= 20);
+    vector_free (v);
+  })
+
   su_test("vector_push", {
     for (int i = 0; i < ITERATIONS; ++i) {
       vector_push(ivec, i);
@@ -51,11 +58,11 @@ su_module(vector_tests, {
     }
   })
 
-  su_test("vector_emplace", {
+  su_test("vector_emplace_back", {
     struct MyStruct *my_vec = NULL;
-    vector_emplace(my_vec, .i = 1, .f = 1.0, .s = "one");
-    vector_emplace(my_vec, .i = 2, .f = 2.0, .s = "two");
-    vector_emplace(my_vec, .i = 3, .f = 3.0, .s = "three");
+    vector_emplace_back(my_vec, .i = 1, .f = 1.0, .s = "one");
+    vector_emplace_back(my_vec, .f = 2.0, "two", .i = 2);
+    vector_emplace_back(my_vec, 3, 3.0, "three");
     vector_free(my_vec);
   })
 
@@ -87,9 +94,44 @@ su_module(vector_tests, {
     su_assert_eq(ivec[1], 10);
   })
 
+  su_test ("vector_insert", {
+    size_t before = vector_size (ivec);
+    vector_insert (ivec, 5, 55);
+    vector_insert (ivec, 7, 77);
+    su_assert_eq (before+2, vector_size (ivec));
+    su_assert_eq (ivec[5] ,55);
+    su_assert_eq (ivec[7], 77);
+  })
+
+  su_test ("vector_emplace", {
+    struct MyStruct *my_vec = NULL;
+    vector_emplace_back (my_vec, 1, 1.0, "one");
+    vector_emplace_back (my_vec, 1, 1.0, "one");
+    vector_emplace_back (my_vec, 1, 1.0, "one");
+    vector_emplace (my_vec, 1, 2, 2.0, "two");
+    vector_emplace (my_vec, 3, .i=3, .f=3.0, .s="three");
+    su_assert_eq (vector_size (my_vec), 5);
+    su_assert_eq (my_vec[1].i, 2);
+    su_assert_eq (my_vec[3].i, 3);
+    vector_free (my_vec);
+  })
+
   su_test("vector_shrink_to_fit", {
     vector_shrink_to_fit(ivec);
     su_assert_eq(vector_size(ivec), vector_capacity(ivec));
+  })
+
+  su_test ("vector_clear", {
+    size_t before = vector_capacity (ivec);
+    vector_clear (ivec);
+    su_assert_eq (vector_size (ivec), 0);
+    su_assert_eq (vector_capacity (ivec), before);
+  })
+
+  su_test ("vector_resize", {
+    vector_resize (ivec, 40);
+    ivec[39] = 0xabc;
+    su_assert_eq (ivec[39], 0xabc);
   })
 
   vector_free(ivec);
