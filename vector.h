@@ -58,11 +58,11 @@ struct vector__header {
 #define vector_end(v) ((v) == NULL ? NULL : ((v) + vector__size(v)))
 /* Appends an element to the vector. */
 #define vector_push(v, e) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (e))
+#ifdef VECTOR__HAS_DECLTYPE
 /* For vectors of structures or unions, appends a new element to the vector and
    constructs it in-place, variadic arguments are passed as initializer list
    for struct or union. */
-#ifdef VECTOR__HAS_DECLTYPE
-#define vector_emplace(v, ...) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (vector__decltype(*v)) { __VA_ARGS__ })
+#define vector_emplace_back(v, ...) (vector__maybegrow((v), 1), (v)[vector__size(v)++] = (vector__decltype(*v)) { __VA_ARGS__ })
 #endif
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v) ((v)[--vector__size(v)])
@@ -72,10 +72,24 @@ struct vector__header {
   vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))),                              \
   (v)[(i)] = (e),                                                                      \
   ++vector__size(v)))
+#ifdef VECTOR__HAS_DECLTYPE
+/* Like vector_emplace_back but element is inserted at position I. */
+#define vector_emplace(v, i, ...) (((v) == NULL || (size_t)(i) >= (vector__size (v)) ? 0 : ( \
+  vector__maybegrow ((v), 1),                                                                \
+  vector__shift ((char *)(void *)(v), (i), 1, sizeof (*(v))),                                \
+  (v)[(i)] = (vector__decltype (*v)) { __VA_ARGS__ },                                        \
+  ++vector__size (v)))
+#endif
 /* Removes an element from the vector. */
 #define vector_remove(v, i) (((v) == NULL || (size_t)(i) >= vector_size(v)) ? 0 : ( \
   vector__shift((char*)(void*)(v), (i+1), -1, sizeof(*(v))),                        \
   --vector__size(v)))
+/* Removes elements from the vector */
+#define vector_erase(v, i, n) (((v) == NULL || (size_t)(i) >= (vector__size (v) - (n))) ? 0 : ( \
+  vector__shift ((char *)(void *)(v), (i)+(n), 0ULL-(n), sizeof (*(v)))                         \
+  vector__size (v) -= (n)))
+/* Clears the contents of the vector. */
+#define vector_clear(v) ((v) == NULL ? 0 : (vector__size (v) = 0))
 
 /* Resizes the vector. */
 #define vector_resize(v, n) (*((void **)&(v)) = vector__resize_f((v), (n), sizeof(*(v))))
