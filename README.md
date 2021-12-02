@@ -24,6 +24,8 @@ main ()
   for (size_t i = 0; i < vector_size (v); ++i)
     printf ("%d, ", v[i]);
   printf ("}\n");
+  
+  vector_free (v);
 }
 ```
 
