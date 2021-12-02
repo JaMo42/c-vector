@@ -40,6 +40,16 @@ v = { 7, 5, 16, 8, 25, 13, }
 (copied from vector.h, definitions removed)
 
 ```c
+/**
+ * Parameters:
+ *    v - vector
+ *    e - element
+ *    n - number of elements
+ *    i - index of element
+ *    T - type
+ *  ... - initializer list elements
+ */
+
 /* Gets the number of elements in the vector. */
 #define vector_size(v)
 
