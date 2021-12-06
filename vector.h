@@ -17,8 +17,10 @@ struct vector__header {
 # ifdef __cplusplus
 #  define VECTOR__DECLTYPE(x) decltype(x)
 # else /* __cplusplus */
-#  ifdef __GNUC__
+#  if defined (__GNUC__) && !defined (__STRICT_ANSI__)
 #   define VECTOR__DECLTYPE(x) typeof(x)
+#  else
+#   define VECTOR__DECLTYPE(x) __typeof__(x)
 #  endif /* __GNUC__ */
 # endif /* __cplusplus */
 #endif /* VECTOR__DECLTYPE */
