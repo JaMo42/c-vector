@@ -177,10 +177,13 @@ struct vector__header {
   ((v) ? (free(vector__get(v)), 0) : 0)
 
 /* Create a new vector with the same elements as the input vector */
-#define vector_copy_construct(v)                                              \
-  vector__copy (vector__get (vector__create (vector__size (v), sizeof (*v))), \
-                vector__get (v),                                              \
-                sizeof (*v))
+#define vector_copy_construct(v)                                  \
+  ((v)                                                            \
+   ? vector__copy (vector__get (vector__create (vector__size (v), \
+                                                sizeof (*v))),    \
+                   vector__get (v),                               \
+                   sizeof (*v))                                   \
+  : NULL)
 
 /* Copy data from SRC to DST */
 #define vector_copy(dst, src)                                                  \
