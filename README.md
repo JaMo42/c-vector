@@ -109,17 +109,26 @@ v = { 7, 5, 16, 8, 25, 13, }
 
 /* Frees the vector. */
 #define vector_free(v)
+
+/* Create a new vector with the same elements as the input vector */
+#define vector_copy_construct(v)
+
+/* Copy data from SRC to DST */
+#define vector_copy(dst, src)
+
+/* Iterate over the vector, IT recieves a pointer to each element */
+#define vector_for_each(v, it)
 ```
 
 Most of these may be called with `v` being a null pointer, in this case they will either
 
-- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`
+- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`
 
 - Return `1`: `vector_empty`
 
 - Do nothing: `vector_shrink_to_fit`, `vector_insert`, `vector_emplace`, `vector_remove`, `vector_erase`, `vector_clear`, `vector_free`
 
-- Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`
+- Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`, `vector_copy`
 
 The only exceptions are `vector_back` and `vector_pop` which will cause a segmentation fault.
 
