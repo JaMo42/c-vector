@@ -160,6 +160,35 @@ su_module(vector_tests, {
   })
 #endif
 
+  su_test ("vector_copy_construct", {
+    int *my_vec = vector_copy_construct (ivec);
+    su_assert_eq (vector_size (my_vec), vector_size (ivec));
+    for (size_t i = 0; i < vector_size (my_vec); ++i)
+      su_assert_eq (my_vec[i], ivec[i]);
+    vector_free (my_vec);
+  })
+
+  su_test ("vector_copy", {
+    int *v1 = NULL;
+    int *v2 = vector_create (int, vector_size (ivec) / 2);
+    int *v3 = vector_create (int, vector_size (ivec) + 5);
+    vector_copy (v1, ivec);
+    vector_copy (v2, ivec);
+    vector_copy (v3, ivec);
+    su_assert_eq (vector_size (v1), vector_size (ivec));
+    su_assert_eq (vector_size (v2), vector_size (ivec));
+    su_assert_eq (vector_size (v3), vector_size (ivec));
+    for (size_t i = 0; i < vector_size (ivec); ++i)
+      {
+        su_assert_eq (v1[i], ivec[i]);
+        su_assert_eq (v2[i], ivec[i]);
+        su_assert_eq (v3[i], ivec[i]);
+      }
+    vector_free (v1);
+    vector_free (v2);
+    vector_free (v3);
+  })
+
   vector_free(ivec);
 })
 

@@ -1,5 +1,5 @@
 cc = clang
-cc_opts = -Wall -Wextra
+cc_opts = -Wall -Wextra -g
 
 ifndef PREFIX
 	PREFIX = /usr/local

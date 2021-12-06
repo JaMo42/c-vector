@@ -56,7 +56,7 @@ struct vector__header {
 #define vector__capacity(v) (vector__get(v)->capacity)
 
 /* Grow the vector so it can fit at least N more items. */
-#define vector__grow(v, n) (*((void **)&(v)) = vector__grow_f((v), (n), sizeof(*(v))))
+#define vector__grow(v, n) (*((void **)&(v)) = vector__grow_impl((v), (n), sizeof(*(v))))
 /* Check if the vector needs to grow to accommodate N more items. */
 #define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) >= vector__capacity(v))
 /* Ensure that the vector can fit N more items, grow it if necessary. */
@@ -150,7 +150,7 @@ struct vector__header {
 
 /* Resizes the vector. */
 #define vector_resize(v, n)\
-  (*((void **)&(v)) = vector__resize_f((v), (n), sizeof(*(v))))
+  (*((void **)&(v)) = vector__resize_impl((v), (n), sizeof(*(v))))
 
 /* Creates a new empty vector. */
 #define vector_create(T, n)\
@@ -174,10 +174,21 @@ struct vector__header {
 #define vector_free(v)\
   ((v) ? (free(vector__get(v)), 0) : 0)
 
+/* Create a new vector with the same elements as the input vector */
+#define vector_copy_construct(v)                                              \
+  vector__copy (vector__get (vector__create (vector__size (v), sizeof (*v))), \
+                vector__get (v),                                              \
+                sizeof (*v))
+
+/* Copy data from SRC to DST */
+#define vector_copy(dst, src)                                                  \
+  (dst = (dst                                                                  \
+          ? vector__copy (vector__get (dst), vector__get (src), sizeof (*dst)) \
+          : vector_copy_construct (src)))
 
 
 static void *
-vector__resize_f(void *data, size_t elems, size_t elem_size) {
+vector__resize_impl(void *data, size_t elems, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)realloc (
     data ? vector__get (data) : NULL,
     elems * elem_size + sizeof (struct vector__header));
@@ -192,17 +203,17 @@ vector__resize_f(void *data, size_t elems, size_t elem_size) {
     }
   else
     {
-      fputs("vector__resize_f: allocation failed\n", stderr);
+      fputs("vector__resize_impl: allocation failed\n", stderr);
       exit (1);
     }
 }
 
 VECTOR__MAYBE_UNUSED static void *
-vector__grow_f(void *data, size_t size, size_t elem_size) {
+vector__grow_impl(void *data, size_t size, size_t elem_size) {
   size_t min_needed = vector_size(data) + size;
   size_t default_growth = vector_capacity(data) << 1;
   size_t new_capacity = default_growth > min_needed ? default_growth : min_needed;
-  return vector__resize_f(data, new_capacity, elem_size);
+  return vector__resize_impl(data, new_capacity, elem_size);
 }
 
 VECTOR__MAYBE_UNUSED static void
@@ -219,6 +230,17 @@ vector__create(size_t capacity, size_t elem_size) {
   v->size = 0;
   v->capacity = capacity;
   return (void *)v->data;
+}
+
+VECTOR__MAYBE_UNUSED static void *
+vector__copy (struct vector__header *dest, struct vector__header *source,
+              size_t elem_size)
+{
+  if (source->size > dest->capacity)
+    dest = vector__get (vector__resize_impl (dest->data, source->size,
+                                             elem_size));
+  dest->size = source->size;
+  return memcpy (dest->data, source->data, source->size * elem_size);
 }
 
 #endif /* !VECTOR_H */
