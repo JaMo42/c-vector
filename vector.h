@@ -186,6 +186,14 @@ struct vector__header {
           ? vector__copy (vector__get (dst), vector__get (src), sizeof (*dst)) \
           : vector_copy_construct (src)))
 
+#ifdef VECTOR__DECLTYPE
+/* Iterate over the vector, IT recieves a pointer to each element */
+#define vector_for_each(v, it)                                       \
+  for (VECTOR__DECLTYPE (v) it = (v), __end = (v) + vector_size (v); \
+       it != __end; ++it)
+#endif
+
+
 
 static void *
 vector__resize_impl(void *data, size_t elems, size_t elem_size) {
