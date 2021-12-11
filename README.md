@@ -134,9 +134,9 @@ The only exceptions are `vector_back` and `vector_pop` which will cause a segmen
 
 ### Availability
 
-By default `vector_emplace_back`, `vector_emplace` and `vector_init` are only defined if `__GNUC__` is defined.
+By default `vector_emplace_back`, `vector_emplace`, `vector_for_each` and `vector_init` are only defined if `__GNUC__` is defined.
 
-`vector_emplace_back` and `vector_emplace` can be enabled by defining `VECTOR__DECLTYPE(x)`, which gives the type of `x`.
+`vector_emplace_back`, `vector_emplace` and `vector_for_each` can be enabled by defining `VECTOR__DECLTYPE(x)`, which gives the type of `x`.
 
 If your compiler does support [statement expressions](https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html), `vector_init` can be enabled by defining `VECTOR__HAS_STATEMENT_EXPRS`.
 
