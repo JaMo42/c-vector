@@ -194,6 +194,7 @@ su_module(vector_tests, {
     int i = 0;
     vector_for_each (my_vec, elem)
       su_assert_eq (*elem, ++i);
+    vector_free (my_vec);
   })
 
   vector_free(ivec);
