@@ -187,6 +187,12 @@ su_module(vector_tests, {
     vector_free (v1);
     vector_free (v2);
     vector_free (v3);
+    int *v4 = NULL;
+    int *v5 = vector_init (4, 5, 6);
+    vector_copy (v5, v4);
+    su_assert (v5);
+    su_assert_eq (vector_size (v5), 0);
+    vector_free (v5);
   })
 
   su_test ("vector_for_each",  {

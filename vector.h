@@ -186,9 +186,12 @@ struct vector__header {
   : NULL)
 
 /* Copy data from SRC to DST */
-#define vector_copy(dst, src)                                                  \
-  (dst = (dst                                                                  \
-          ? vector__copy (vector__get (dst), vector__get (src), sizeof (*dst)) \
+#define vector_copy(dst, src)                                      \
+  (dst = (dst                                                      \
+          ? (src                                                   \
+             ? vector__copy (vector__get (dst), vector__get (src), \
+                             sizeof (*dst))                        \
+             : ((void)vector_clear (dst), dst))                    \
           : vector_copy_construct (src)))
 
 #ifdef VECTOR__DECLTYPE
