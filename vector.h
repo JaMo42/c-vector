@@ -183,7 +183,7 @@ struct vector__header {
                                                 sizeof (*v))),    \
                    vector__get (v),                               \
                    sizeof (*v))                                   \
-  : NULL)
+   : NULL)
 
 /* Copy data from SRC to DST */
 #define vector_copy(dst, src)                                      \
@@ -196,8 +196,8 @@ struct vector__header {
 
 #ifdef VECTOR__DECLTYPE
 /* Iterate over the vector, IT recieves a pointer to each element */
-#define vector_for_each(v, it)                                       \
-  for (VECTOR__DECLTYPE (v) it = (v), __end = (v) + vector_size (v); \
+#define vector_for_each(v, it)                                        \
+  for (VECTOR__DECLTYPE (v) it = (v), __end = (v) + vector__size (v); \
        it != __end; ++it)
 #endif
 
@@ -219,30 +219,32 @@ vector__resize_impl(void *data, size_t elems, size_t elem_size) {
     }
   else
     {
-      fputs("vector__resize_impl: allocation failed\n", stderr);
+      fputs ("vector__resize_impl: allocation failed\n", stderr);
       exit (1);
     }
 }
 
 VECTOR__MAYBE_UNUSED static void *
 vector__grow_impl(void *data, size_t size, size_t elem_size) {
-  size_t min_needed = vector_size(data) + size;
-  size_t default_growth = vector_capacity(data) << 1;
-  size_t new_capacity = default_growth > min_needed ? default_growth : min_needed;
-  return vector__resize_impl(data, new_capacity, elem_size);
+  size_t min_needed = vector_size (data) + size;
+  size_t default_growth = vector_capacity (data) << 1;
+  size_t new_capacity = (default_growth > min_needed
+                         ? default_growth
+                         : min_needed);
+  return vector__resize_impl (data, new_capacity, elem_size);
 }
 
 VECTOR__MAYBE_UNUSED static void
 vector__shift(char *data, size_t index, long diff, size_t elem_size) {
   char *at = data + index * elem_size;
-  size_t count = vector__size(data) - index;
-  memmove(at + diff * elem_size, at, count * elem_size);
+  size_t count = vector__size (data) - index;
+  memmove (at + diff * elem_size, at, count * elem_size);
 }
 
 VECTOR__MAYBE_UNUSED static void *
 vector__create(size_t capacity, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)malloc(
-    capacity * elem_size + sizeof(struct vector__header));
+    capacity * elem_size + sizeof (struct vector__header));
   v->size = 0;
   v->capacity = capacity;
   return (void *)v->data;
