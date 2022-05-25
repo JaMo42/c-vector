@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "limits.h"
 
 struct vector__header {
   size_t size;
@@ -43,6 +44,9 @@ struct vector__header {
 #  define VECTOR__HAS_STATEMENT_EXPRS
 # endif /* __GNUC__ */
 #endif /* VECTOR__HAS_STATEMENT_EXPRS */
+
+/* Used for the E parameter of vector_slice to get the rest of the vector. */
+#define VECTOR_SLICE_REST PTRDIFF_MAX
 
 /**
  * Parameters:

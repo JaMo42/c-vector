@@ -298,6 +298,10 @@ su_module(vector_tests, {
     su_assert_eq (slice_of_null, NULL);
     vector_free (slice_of_null);
 
+    VECTOR(int) all = vector_slice (v, 0, VECTOR_SLICE_REST);
+    su_assert (check (all, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+    vector_free (all);
+
     vector_free (v);
   })
 
