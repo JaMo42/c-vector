@@ -330,7 +330,7 @@ vector__slice (const void *data, size_t elem_size, size_t size,
     return NULL;
   const size_t len = end - begin;
   return memcpy (vector__create_with_size (len, elem_size, len),
-                 data + begin * elem_size,
+                 (const char *)data + begin * elem_size,
                  len * elem_size);
 }
 
