@@ -311,7 +311,7 @@ vector__slice (const void *data, size_t elem_size, size_t size,
     return NULL;
   if (begin < 0)
     {
-      if (-begin >= ssize)
+      if (-begin > ssize)
         return NULL;
       begin = ssize + begin;
     }

@@ -274,6 +274,10 @@ su_module(vector_tests, {
     su_assert (check (first_five, 5, 0, 1, 2, 3, 4));
     vector_free (first_five);
 
+    VECTOR(int) first_five_2 = vector_slice (v, -10, -5);
+    su_assert (check (first_five_2, 5, 0, 1, 2, 3, 4));
+    vector_free (first_five_2);
+
     VECTOR(int) last_five = vector_slice (v, -5, 10);
     su_assert (check (last_five, 5, 5, 6, 7, 8, 9));
     vector_free (last_five);
