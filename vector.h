@@ -3,6 +3,7 @@
  */
 #ifndef VECTOR_H
 #define VECTOR_H
+#include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -64,7 +65,8 @@ struct vector__header {
 /* Ensure that the vector can fit N more items, grow it if necessary. */
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
 
-
+/* Same as `T *`, to better document source code. */
+#define VECTOR(T) T *
 
 /* Gets the number of elements in the vector. */
 #define vector_size(v)\
@@ -77,6 +79,24 @@ struct vector__header {
 /* Checks if the vector is empty. */
 #define vector_empty(v)\
   ((v) == NULL ? 1 : vector__size(v) == 0)
+
+/* If I is negative `vector_size (v) - i`, otherwise just unchanged I. */
+#define vector_idx(v, i)   \
+  ((i) < 0                 \
+   ? vector_size (v) + (i) \
+   : (size_t)(i))
+
+/* Checks if I is a valid index (see vector_idx) */
+#define vector_idx_valid(v, i)\
+  ((v) && vector_idx ((v), (i)) < vector__size (v))
+
+/* Gets a reference to the element at index I with bounds checking.
+   If I is a negative number, gets the element at `vector_size(v) - i`.
+   If I is out of bounds the result is NULL. */
+#define vector_at(v, i)          \
+  (vector_idx_valid ((v), (i))   \
+   ? &(v)[vector_idx ((v), (i))] \
+   : NULL)
 
 /* Increases the capacity of the vector the fit at least N elements. */
 #define vector_reserve(v, n)\
@@ -172,6 +192,13 @@ struct vector__header {
   })
 #endif
 
+/* Creates a vector with the first N elements form the buffer pointed to by P.
+ */
+#define vector_create_from(p, n)                              \
+  memcpy (vector__create_with_size ((n), sizeof (*(p)), (n)), \
+          (p),                                                \
+          (n) * sizeof(*(p)))
+
 /* Frees the vector. */
 #define vector_free(v)\
   ((v) ? (free(vector__get(v)), 0) : 0)
@@ -200,6 +227,11 @@ struct vector__header {
   for (VECTOR__DECLTYPE (v) it = (v), __end = (v) + vector__size (v); \
        it != __end; ++it)
 #endif
+
+/* Creates a vector from `v[b:e]`. B and E may be negative (see vector_idx).
+   If B or E are out of bounds they get clamped into the valid range. */
+#define vector_slice(v, b, e)\
+  vector__slice ((const void *)(v), sizeof (*(v)), vector_size(v), (b), (e))
 
 
 
@@ -251,6 +283,15 @@ vector__create(size_t capacity, size_t elem_size) {
 }
 
 VECTOR__MAYBE_UNUSED static void *
+vector__create_with_size (size_t capacity, size_t elem_size, size_t size) {
+  struct vector__header *v = (struct vector__header *)malloc(
+    capacity * elem_size + sizeof (struct vector__header));
+  v->size = size;
+  v->capacity = capacity;
+  return (void *)v->data;
+}
+
+VECTOR__MAYBE_UNUSED static void *
 vector__copy (struct vector__header *dest, struct vector__header *source,
               size_t elem_size)
 {
@@ -261,5 +302,36 @@ vector__copy (struct vector__header *dest, struct vector__header *source,
   return memcpy (dest->data, source->data, source->size * elem_size);
 }
 
-#endif /* !VECTOR_H */
+VECTOR__MAYBE_UNUSED static void *
+vector__slice (const void *data, size_t elem_size, size_t size,
+               ptrdiff_t begin, ptrdiff_t end)
+{
+  const ptrdiff_t ssize = (ptrdiff_t)size;
+  if (!data)
+    return NULL;
+  if (begin < 0)
+    {
+      if (-begin >= ssize)
+        return NULL;
+      begin = ssize + begin;
+    }
+  else if (begin >= ssize)
+    return NULL;
+  if (end < 0)
+    {
+      if (-end > ssize)
+        end = ssize;
+      else
+        end = ssize + end;
+    }
+  else if (end > ssize)
+    end = ssize;
+  if (begin >= end)
+    return NULL;
+  const size_t len = end - begin;
+  return memcpy (vector__create_with_size (len, elem_size, len),
+                 data + begin * elem_size,
+                 len * elem_size);
+}
 
+#endif /* !VECTOR_H */

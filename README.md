@@ -24,7 +24,7 @@ main ()
   for (size_t i = 0; i < vector_size (v); ++i)
     printf ("%d, ", v[i]);
   printf ("}\n");
-  
+
   vector_free (v);
 }
 ```
@@ -34,6 +34,15 @@ Output:
 ```
 v = { 7, 5, 16, 8, 25, 13, }
 ```
+
+### Types
+
+```c
+#define VECTOR(T) T *
+```
+
+This is used to be clear about something being a vector and just a pointer in
+source code.
 
 ### Functions
 
@@ -58,6 +67,17 @@ v = { 7, 5, 16, 8, 25, 13, }
 
 /* Checks if the vector is empty. */
 #define vector_empty(v)
+
+/* If I is negative `vector_size (v) - i`, otherwise just unchanged I. */
+#define vector_idx(v, i)
+
+/* Checks if I is a valid index (see vector_idx) */
+#define vector_idx_valid(v, i)
+
+/* Gets a reference to the element at index I with bounds checking.
+   If I is a negative number, gets the element at `vector_size(v) - i`.
+   If I is out of bounds the result is NULL. */
+#define vector_at(v, i)
 
 /* Increases the capacity of the vector the fit at least N elements. */
 #define vector_reserve(v, n)
@@ -107,6 +127,10 @@ v = { 7, 5, 16, 8, 25, 13, }
    type. */
 #define vector_init(x, ...)
 
+/* Creates a vector with the first N elements form the buffer pointed to by P.
+ */
+#define vector_create_from(p, n)
+
 /* Frees the vector. */
 #define vector_free(v)
 
@@ -118,11 +142,15 @@ v = { 7, 5, 16, 8, 25, 13, }
 
 /* Iterate over the vector, IT recieves a pointer to each element */
 #define vector_for_each(v, it)
+
+/* Creates a vector from `v[b:e]`. B and E may be negative (see vector_idx).
+   If B or E are out of bounds they get clamped into the valid range. */
+#define vector_slice(v, b, e)
 ```
 
 Most of these may be called with `v` being a null pointer, in this case they will either
 
-- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`
+- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`, `vector_idx_valid`, `vector_at`, `vector_slice`
 
 - Return `1`: `vector_empty`
 
@@ -131,6 +159,8 @@ Most of these may be called with `v` being a null pointer, in this case they wil
 - Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`, `vector_copy`
 
 The only exceptions are `vector_back` and `vector_pop` which will cause a segmentation fault.
+
+`vector_idx (NULL, -n)` will result in `(size_t)-n` (overflows into a huge number).
 
 ### Availability
 
@@ -143,4 +173,3 @@ If your compiler does support [statement expressions](https://gcc.gnu.org/online
 ## Acknowledgments
 
 Based on an old version of stb, its implementation has since evolved quite a lot (and is no longer even named stretchy buffer).
-

@@ -1,8 +1,16 @@
 #include <stdint.h>
+#include <stdarg.h>
 #include "smallunit.h"
 #include "vector.h"
 
 #define ITERATIONS 20
+
+struct MyStruct
+{
+  int i;
+  float f;
+  const char *s;
+};
 
 uint32_t next_power_of_2(uint32_t v) {
   --v;
@@ -21,15 +29,47 @@ void print_vector(int *data) {
   }
 }
 
-struct MyStruct
-{
-  int i;
-  float f;
-  const char *s;
-};
+// Checks if the given integer vector has SIZE elements which are the same as
+// the given variadic arguments.
+int check(VECTOR(int) v, const size_t size, ...) {
+  va_list ap;
+  int my, expected;
+  size_t i;
+  if (vector_size (v) != size) {
+    fprintf (stderr,
+             "check: size mismatch: vector_size (v) != %zu\n"
+             "                 with vector_size (v) = %zu\n",
+             size, vector_size (v));
+    return 0;
+  }
+  va_start (ap, size);
+  for (i = 0; i < size; ++i) {
+    expected = va_arg (ap, int);
+    my = v[i];
+    if (my != expected) {
+      fprintf (stderr,
+               "check: value mismatch: v[%zu] != %d\n"
+               "                  with v[%zu] = %d\n",
+               i, expected, i, my);
+      va_end (ap);
+      return 0;
+    }
+  }
+  va_end (ap);
+  return 1;
+}
+
+static int G_int_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
 su_module(vector_tests, {
   int *ivec = NULL;
+
+  su_test ("VECTOR(T)", {
+    VECTOR(int) a = NULL;
+    int *b = NULL;
+    su_assert (_Generic(a, int *: 1, default: 0));
+    su_assert_eq (a, b);
+  })
 
   su_test("vector_create", {
     int *a = NULL;
@@ -38,6 +78,32 @@ su_module(vector_tests, {
     su_assert(!memcmp(vector__get(a), vector__get(b), sizeof(struct vector__header)));
     vector_free(a);
     vector_free(b);
+  })
+
+  su_test ("vector_create_from", {
+    VECTOR(int) v = vector_create_from (G_int_buffer, 10);
+    su_assert (check (v, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+    vector_free (v);
+  })
+
+  su_test ("vector_idx", {
+    VECTOR(int) v = vector_create_from (G_int_buffer, 10);
+    su_assert_eq (vector_idx (v, 0), 0);
+    su_assert_eq (vector_idx (v, -1), 9);
+    su_assert_eq (vector_idx (NULL, 10), 10);
+    su_assert_eq (vector_idx (NULL, -10), (size_t)-10);
+    vector_free (v);
+  })
+
+  su_test ("vector_at", {
+    VECTOR(int) v = vector_create_from (G_int_buffer, 10);
+    su_assert_eq (vector_at (v, 0), v);
+    su_assert_eq (vector_at (v, 100), NULL);
+    su_assert_eq (*vector_at (v, -1), 9);
+    su_assert_eq (vector_at (NULL, 0), NULL);
+    su_assert_eq (vector_at (NULL, 1), NULL);
+    su_assert_eq (vector_at (NULL, -1), NULL);
+    vector_free (v);
   })
 
   su_test ("vector_reserve", {
@@ -148,14 +214,8 @@ su_module(vector_tests, {
 #ifdef vector_init
   su_test ("vector_init", {
     int *v = vector_init (1, 2, 3, 4, 5, 6);
-    su_assert_eq (vector_size (v), 6);
     su_assert (vector_capacity (v) >= 6);
-    su_assert_eq (v[0], 1);
-    su_assert_eq (v[1], 2);
-    su_assert_eq (v[2], 3);
-    su_assert_eq (v[3], 4);
-    su_assert_eq (v[4], 5);
-    su_assert_eq (v[5], 6);
+    su_assert (check (v, 6, 1, 2, 3, 4, 5, 6));
     vector_free (v);
   })
 #endif
@@ -203,10 +263,39 @@ su_module(vector_tests, {
     vector_free (my_vec);
   })
 
+  su_test ("vector_slice", {
+    VECTOR(int) v = vector_create_from (G_int_buffer, 10);
+
+    VECTOR(int) first_five = vector_slice (v, 0, 5);
+    su_assert (check (first_five, 5, 0, 1, 2, 3, 4));
+    vector_free (first_five);
+
+    VECTOR(int) last_five = vector_slice (v, -5, 10);
+    su_assert (check (last_five, 5, 5, 6, 7, 8, 9));
+    vector_free (last_five);
+
+    VECTOR(int) end_out_of_bounds = vector_slice (v, 8, 100);
+    su_assert (check (end_out_of_bounds, 2, 8, 9));
+    vector_free (end_out_of_bounds);
+
+    VECTOR(int) begin_out_of_bounds = vector_slice (v, 20, 30);
+    su_assert_eq (begin_out_of_bounds, NULL);
+    vector_free (begin_out_of_bounds);
+
+    VECTOR(int) begin_after_end = vector_slice (v, -3, 4);
+    su_assert_eq (begin_after_end, NULL);
+    vector_free (begin_after_end);
+
+    VECTOR(int) slice_of_null = vector_slice (NULL, 0, 1);
+    su_assert_eq (slice_of_null, NULL);
+    vector_free (slice_of_null);
+
+    vector_free (v);
+  })
+
   vector_free(ivec);
 })
 
 int main() {
   su_run_module(vector_tests);
 }
-
