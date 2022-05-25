@@ -3,6 +3,10 @@
 #include "smallunit.h"
 #include "vector.h"
 
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wnull-pointer-arithmetic"
+#endif
+
 #define ITERATIONS 20
 
 struct MyStruct
