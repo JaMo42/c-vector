@@ -339,3 +339,4 @@ vector__slice (const void *data, size_t elem_size, size_t size,
 }
 
 #endif /* !VECTOR_H */
+

@@ -5,7 +5,7 @@ ifndef PREFIX
 	PREFIX = /usr/local
 endif
 
-test: test.c vector.h
+test: test.c vector.h static_vector.h
 	$(cc) $(cc_opts) -o $@ $<
 
 install:

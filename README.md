@@ -44,9 +44,7 @@ v = { 7, 5, 16, 8, 25, 13, }
 This is used to be clear about something being a vector and just a pointer in
 source code.
 
-### Functions
-
-(copied from vector.h, definitions removed)
+### Synopsis
 
 ```c
 /**
@@ -148,6 +146,8 @@ source code.
 #define vector_slice(v, b, e)
 ```
 
+### Null pointer safety
+
 Most of these may be called with `v` being a null pointer, in this case they will either
 
 - Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`, `vector_idx_valid`, `vector_at`, `vector_slice`
@@ -170,6 +170,35 @@ By default `vector_emplace_back`, `vector_emplace`, `vector_for_each` and `vecto
 
 If your compiler does support [statement expressions](https://gcc.gnu.org/onlinedocs/gcc/Statement-Exprs.html), `vector_init` can be enabled by defining `VECTOR__HAS_STATEMENT_EXPRS`.
 
+## static vectors
+
+`static_vector.h` contains utilities to create vectors with a static capacity inside existing buffers.
+
+### Synopsis
+
+```c
+/* Number of elements of type T required to hold the header of a vector. */
+#define VECTOR__HEAD_SPACE(T)
+
+/* Number of elements an array of T needs to hold a vector of T with capacity N. */
+#define VECTOR_STATIC_SIZE(T, n)
+
+/* Creates a vector in the static array V. */
+#define vector_create_static(v)
+
+/* Creates a static vector with a capacity of N in the buffer pointer to by V. */
+#define vector_create_static_sized(v, n)
+
+/* Number of elements the static vector occupies (including its header). */
+#define vector_static_size(v)
+```
+
+### Usage
+
+Static vectors use the same functions as normal vectors.
+There are no checks whether a operation exceeds the static capacity of the vector, instead these operations will try to reallocate and crash.
+
 ## Acknowledgments
 
 Based on an old version of stb, its implementation has since evolved quite a lot (and is no longer even named stretchy buffer).
+

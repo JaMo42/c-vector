@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include "smallunit.h"
 #include "vector.h"
+#include "static_vector.h"
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wnull-pointer-arithmetic"
@@ -308,6 +309,62 @@ su_module(vector_tests, {
   vector_free(ivec);
 })
 
+su_module (static_vector_tests, {
+  su_test ("vector_create_static", {
+    int buf[VECTOR_STATIC_SIZE (int, 10)];
+    VECTOR(int) v = vector_create_static (buf);
+    su_assert_eq (vector_size (v), 0);
+    su_assert_eq (vector_capacity (v), 10);
+    su_assert_eq (vector_static_size (v), VECTOR_STATIC_SIZE (int, 10));
+  })
+
+  su_test ("vector_create_static_sized", {
+    int buf[VECTOR_STATIC_SIZE (int, 20)];
+    int *buf_ptr = buf;
+    VECTOR(int) v = vector_create_static_sized (buf_ptr, 10);
+    su_assert_eq (vector_size (v), 0);
+    su_assert_eq (vector_capacity (v), 10);
+    su_assert_eq (vector_static_size (v), VECTOR_STATIC_SIZE (int, 10));
+  })
+
+  su_test ("multiple in same buffer", {
+    int buf[VECTOR_STATIC_SIZE (int, 10) * 10];
+    int *buf_ptr = buf;
+    int *vectors[10];
+    for (int i = 0; i < 10; ++i) {
+      vectors[i] = vector_create_static_sized (buf_ptr, 10);
+      buf_ptr += VECTOR_STATIC_SIZE (int, 10);
+    }
+    for (int i = 0; i < 10; ++i) {
+      su_assert_eq (vector_size (vectors[i]), 0);
+      su_assert_eq (vector_capacity (vectors[i]), 10);
+    }
+  })
+
+  su_test ("operations", {
+    int buf[VECTOR_STATIC_SIZE (int, 10)];
+    VECTOR(int) v = vector_create_static (buf);
+    for (int i = 0; i < 10; ++i) {
+      vector_push (v, i);
+    }
+    su_assert (check (v, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
+    for (int i = 0; i < 5; ++i) {
+      (void)vector_pop (v);
+    }
+    su_assert (check (v, 5, 0, 1, 2, 3, 4));
+    for (int i = 0; i < 3; ++i) {
+      vector_insert (v, 3+i, 20+i);
+    }
+    su_assert (check (v, 8, 0, 1, 2, 20, 21, 22, 3, 4));
+    vector_erase (v, 4, 3);
+    su_assert (check (v, 5, 0, 1, 2, 20, 4));
+    vector_clear (v);
+    su_assert (vector_empty (v));
+  })
+})
+
 int main() {
   su_run_module(vector_tests);
+  su_run_module(static_vector_tests);
 }
+
