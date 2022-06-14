@@ -65,7 +65,7 @@ struct vector__header {
 /* Grow the vector so it can fit at least N more items. */
 #define vector__grow(v, n) (*((void **)&(v)) = vector__grow_impl((v), (n), sizeof(*(v))))
 /* Check if the vector needs to grow to accommodate N more items. */
-#define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) >= vector__capacity(v))
+#define vector__needgrow(v, n) ((v) == NULL || vector__size(v) + (n) > vector__capacity(v))
 /* Ensure that the vector can fit N more items, grow it if necessary. */
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
 
