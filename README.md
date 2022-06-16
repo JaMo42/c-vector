@@ -41,8 +41,7 @@ v = { 7, 5, 16, 8, 25, 13, }
 #define VECTOR(T) T *
 ```
 
-This is used to be clear about something being a vector and just a pointer in
-source code.
+This is used to be clear about something being a vector and not just a pointer in source code.
 
 ### Synopsis
 
