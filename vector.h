@@ -239,7 +239,7 @@ struct vector__header {
 
 
 
-static void *
+VECTOR__MAYBE_UNUSED static void *
 vector__resize_impl(void *data, size_t elems, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)realloc (
     data ? vector__get (data) : NULL,
