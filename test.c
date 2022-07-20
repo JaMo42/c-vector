@@ -225,8 +225,8 @@ su_module(vector_tests, {
   })
 #endif
 
-  su_test ("vector_copy_construct", {
-    int *my_vec = vector_copy_construct (ivec);
+  su_test ("vector_clone", {
+    int *my_vec = vector_clone (ivec);
     su_assert_eq (vector_size (my_vec), vector_size (ivec));
     for (size_t i = 0; i < vector_size (my_vec); ++i)
       su_assert_eq (my_vec[i], ivec[i]);

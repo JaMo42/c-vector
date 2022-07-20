@@ -208,7 +208,7 @@ struct vector__header {
   ((v) ? (free(vector__get(v)), 0) : 0)
 
 /* Create a new vector with the same elements as the input vector */
-#define vector_copy_construct(v)                                  \
+#define vector_clone(v)                                           \
   ((v)                                                            \
    ? vector__copy (vector__get (vector__create (vector__size (v), \
                                                 sizeof (*v))),    \
@@ -223,7 +223,7 @@ struct vector__header {
              ? vector__copy (vector__get (dst), vector__get (src), \
                              sizeof (*dst))                        \
              : ((void)vector_clear (dst), dst))                    \
-          : vector_copy_construct (src)))
+          : vector_clone (src)))
 
 #ifdef VECTOR__DECLTYPE
 /* Iterate over the vector, IT recieves a pointer to each element */
