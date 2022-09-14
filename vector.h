@@ -227,9 +227,9 @@ struct vector__header {
 
 #ifdef VECTOR__DECLTYPE
 /* Iterate over the vector, IT recieves a pointer to each element */
-#define vector_for_each(v, it)                                        \
-  for (VECTOR__DECLTYPE (v) it = (v), __end = (v) + vector__size (v); \
-       it != __end; ++it)
+#define vector_for_each(v, it)                                             \
+  for (VECTOR__DECLTYPE (v) it = (v), vector__end = (v) + vector_size (v); \
+       it != vector__end; ++it)
 #endif
 
 /* Creates a vector from `v[b:e]`. B and E may be negative (see vector_idx).

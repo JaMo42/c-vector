@@ -66,7 +66,7 @@ int check(VECTOR(int) v, const size_t size, ...) {
 
 static int G_int_buffer[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-su_module(vector_tests, {
+su_module (vector_tests, {
   int *ivec = NULL;
 
   su_test ("VECTOR(T)", {
@@ -266,6 +266,11 @@ su_module(vector_tests, {
     vector_for_each (my_vec, elem)
       su_assert_eq (*elem, ++i);
     vector_free (my_vec);
+    i = 0;
+    int *none = NULL;
+    vector_for_each (none, it)
+      ++i;
+    su_assert_eq (i, 0);
   })
 
   su_test ("vector_slice", {
