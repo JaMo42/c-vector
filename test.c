@@ -192,10 +192,15 @@ su_module (vector_tests, {
 #endif
 
   su_test ("vector_erase", {
-    size_t nefore = vector_size (ivec);
+    size_t before = vector_size (ivec);
     vector_erase (ivec, 4, 5);
-    su_assert_eq (nefore-5, vector_size (ivec));
+    su_assert_eq (before-5, vector_size (ivec));
     su_assert_eq (ivec[4], 30);
+
+    VECTOR(int) v = vector_init (1, 2, 3, 4, 5);
+    vector_erase (v, vector_size (v) - 3, 3);
+    su_assert (check (v, 2, 1, 2));
+    vector_free (v);
   })
 
   su_test("vector_shrink_to_fit", {

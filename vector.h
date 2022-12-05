@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "limits.h"
+#include <limits.h>
 
 struct vector__header {
   size_t size;
@@ -165,7 +165,7 @@ struct vector__header {
 
 /* Removes N elements from the vector, starting at position I. */
 #define vector_erase(v, i, n)                                               \
-  (((v) == NULL || (size_t)(i) >= (vector__size (v) - (n)))                 \
+  (((v) == NULL || (size_t)(i) > (vector__size (v) - (n)))                  \
    ? 0                                                                      \
    : (vector__shift ((char *)(void *)(v), (i)+(n), 0LL-(n), sizeof (*(v))), \
       vector__size (v) -= (n)))
@@ -216,7 +216,8 @@ struct vector__header {
                    sizeof (*v))                                   \
    : NULL)
 
-/* Copy data from SRC to DST */
+/* Copy data from SRC to DST.
+   DST must be an lvalue, SRC may be elavuated multiple times. */
 #define vector_copy(dst, src)                                      \
   (dst = (dst                                                      \
           ? (src                                                   \
@@ -232,8 +233,10 @@ struct vector__header {
        it != vector__end; ++it)
 #endif
 
-/* Creates a vector from `v[b:e]`. B and E may be negative (see vector_idx).
-   If B or E are out of bounds they get clamped into the valid range. */
+/* Creates a vector from `v[b:e]` (like Python slicing). B and E may be
+   negative (see vector_idx). If B or E are out of bounds they get clamped
+   into the valid range. `VECTOR_SLICE_REST` can be used as the second
+   argument to get all remaining elements after the begin. */
 #define vector_slice(v, b, e)\
   vector__slice ((const void *)(v), sizeof (*(v)), vector_size(v), (b), (e))
 
@@ -263,7 +266,7 @@ vector__resize_impl(void *data, size_t elems, size_t elem_size) {
 VECTOR__MAYBE_UNUSED static void *
 vector__grow_impl(void *data, size_t size, size_t elem_size) {
   size_t min_needed = vector_size (data) + size;
-  size_t default_growth = vector_capacity (data) << 1;
+  size_t default_growth = data ? (vector__capacity (data) << 1) : 16;
   size_t new_capacity = (default_growth > min_needed
                          ? default_growth
                          : min_needed);
