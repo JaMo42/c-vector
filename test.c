@@ -139,6 +139,15 @@ su_module (vector_tests, {
   })
 #endif
 
+  su_test ("vector_push_vector", {
+    VECTOR(int) v = vector_init (1, 2, 3);
+    VECTOR(int) o = vector_init (4, 5, 6);
+    vector_push_vector (v, o);
+    vector_free (o);
+    su_assert (check (v, 6, 1, 2, 3, 4, 5, 6));
+    vector_free (v);
+  })
+
   su_test("vector_pop", {
     su_assert_eq(vector_pop(ivec), ITERATIONS - 1);
     for (int i = 0; i < (ITERATIONS/2 - 2); ++i) {

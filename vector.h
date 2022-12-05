@@ -132,6 +132,15 @@ struct vector__header {
    (v)[vector__size(v)++] = (VECTOR__DECLTYPE(*v)) { __VA_ARGS__ })
 #endif
 
+/* Appends the items from OTHER to V. */
+#define vector_push_vector(v, other)                     \
+  ((other)                                               \
+   ? (vector__maybegrow ((v), vector__size (other)),     \
+      memcpy ((v) + vector__size (v), (other),           \
+              vector__size (other) * sizeof (*(other))), \
+      vector__size (v) += vector__size (other))          \
+   : 0)
+
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v)\
   ((v)[--vector__size(v)])

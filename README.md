@@ -96,6 +96,9 @@ This is used to be clear about something being a vector and not just a pointer i
    for struct or union. */
 #define vector_emplace_back(v, ...)
 
+/* Appends the items from another vector to the vector. */
+#define vector_push_vector(v, other)
+
 /* Gets and removes the last element of the vector. */
 #define vector_pop(v)
 
@@ -155,7 +158,7 @@ Most of these may be called with `v` being a null pointer, in this case they wil
 
 - Do nothing: `vector_shrink_to_fit`, `vector_insert`, `vector_emplace`, `vector_remove`, `vector_erase`, `vector_clear`, `vector_free`
 
-- Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`, `vector_copy`
+- Create a new vector: `vector_reserve`, `vector_push`, `vector_emplace_back`, `vector_copy`, `vector_push_vector`
 
 The only exceptions are `vector_back` and `vector_pop` which will cause a segmentation fault.
 
