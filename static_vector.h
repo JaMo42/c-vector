@@ -3,10 +3,10 @@
 #include "vector.h"
 
 /* Number of elements of type T required to hold the header of a vector. */
-#define VECTOR__HEAD_SPACE(T)                                      \
-  (sizeof (T) > sizeof (struct vector__header)                     \
-   ? 1                                                             \
-   : ((sizeof (struct vector__header) + sizeof (T)) / sizeof (T)))
+#define VECTOR__HEAD_SPACE(T)                                          \
+  (sizeof (T) >= sizeof (struct vector__header)                        \
+   ? 1                                                                 \
+   : ((sizeof (struct vector__header) + sizeof (T) - 1) / sizeof (T)))
 
 /* Number of elements an array of T needs to hold a vector of T with capacity N. */
 #define VECTOR_STATIC_SIZE(T, n)\
