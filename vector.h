@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+#include <stdint.h>
 #include <limits.h>
 
 struct vector__header {
@@ -254,6 +256,27 @@ struct vector__header {
 #define vector_slice(v, b, e)\
   vector__slice ((const void *)(v), sizeof (*(v)), vector_size(v), (b), (e))
 
+/* Given a list of indices, creates a vector from `v` with the elements at
+   at the given indices. Indices can be in any order and be repeated and may
+   be negative (the value INT_MIN can not be used). There is no bounds
+   checking on the indices.
+   Example:
+     VECTOR(int) vec      = vector_init (1, 2, 3);
+     //                   = {1, 2, 3}
+     VECOTR(int) reversed = vector_select (vec, 2, 1, 0);
+     //                   = {3, 2, 1}
+     VECOTR(int) reversed = vector_select (vec, -1, -2, -3);
+     //                   = {3, 2, 1}
+     VECTOR(int) only_two = vector_select (vec, 1, 1, 1);
+     //                   = {2, 2, 2}
+     VECTOR(int) twice    = vector_select (vec, 0, 1, 2, 0, 1, 2);
+     //                   = {1, 2, 3, 1, 2, 3}
+   Note: the variadic arguments are always read as integers! */
+#define vector_select(v, ...)                                              \
+  vector__select ((const void *)(v), sizeof (*(v)), vector_size (v),       \
+                  /* first copy of variadic arguments is used to determine \
+                     the size, second to do the selection. */              \
+                  __VA_ARGS__, INT_MIN, __VA_ARGS__, INT_MIN)
 
 
 VECTOR__MAYBE_UNUSED static void *
@@ -367,5 +390,28 @@ vector__slice (const void *data, size_t elem_size, size_t size,
                  len * elem_size);
 }
 
-#endif /* !VECTOR_H */
+VECTOR__MAYBE_UNUSED static void *
+vector__select (const void *data, size_t elem_size, size_t size, ...)
+{
+  int count = 0, idx;
+  va_list ap;
+  if (data == NULL)
+    return NULL;
+  va_start (ap, size);
+  while ((idx = va_arg (ap, int)) != INT_MIN)
+    ++count;
+  void *result = vector__create_with_size (count, elem_size, count);
+  char *w = (char *)result;
+  const char *const r = (const char *)data;
+  while ((idx = va_arg (ap, int)) != INT_MIN)
+    {
+      if (idx < 0)
+        idx += size;
+      memcpy (w, r + idx*elem_size, elem_size);
+      w += elem_size;
+    }
+  va_end (ap);
+  return result;
+}
 
+#endif /* !VECTOR_H */

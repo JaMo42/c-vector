@@ -356,6 +356,27 @@ su_module (vector_tests, {
     vector_free (v);
   })
 
+  su_test ("vector_select", {
+    VECTOR(int) v = vector_init (1, 2, 3, 4, 5);
+
+    VECTOR(int) r = vector_select (v, 4, 3, 2, 1, 0);
+    su_assert (check (r, 5, 5, 4, 3, 2, 1));
+    vector_free (r);
+
+    VECTOR(int) r2 = vector_select (v, -1, -2, -3, -4, -5);
+    su_assert (check (r2, 5, 5, 4, 3, 2, 1));
+    vector_free (r2);
+
+    VECTOR(int) four = vector_select (v, 3, 3, 3, 3);
+    su_assert (check (four, 4, 4, 4, 4, 4));
+    vector_free (four);
+
+    vector_free (v);
+
+    VECTOR(int) empty = vector_select ((int *)NULL, 1, 2, 3);
+    su_assert_eq (empty, NULL);
+  })
+
   vector_free(ivec);
 })
 

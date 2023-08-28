@@ -150,13 +150,31 @@ This is used to be clear about something being a vector and not just a pointer i
 /* Creates a vector from `v[b:e]`. B and E may be negative (see vector_idx).
    If B or E are out of bounds they get clamped into the valid range. */
 #define vector_slice(v, b, e)
+
+/* Given a list of indices, creates a vector from `v` with the elements at
+   at the given indices. Indices can be in any order and be repeated and may
+   not be negative (the value INT_MIN can not be used). There is no bounds
+   checking on the indices.
+   Example:
+     VECTOR(int) vec      = vector_init (1, 2, 3);
+     //                   = {1, 2, 3}
+     VECOTR(int) reversed = vector_select (vec, 2, 1, 0);
+     //                   = {3, 2, 1}
+     VECOTR(int) reversed = vector_select (vec, -1, -2, -3);
+     //                   = {3, 2, 1}
+     VECTOR(int) only_two = vector_select (vec, 1, 1, 1);
+     //                   = {2, 2, 2}
+     VECTOR(int) twice    = vector_select (vec, 0, 1, 2, 0, 1, 2);
+     //                   = {1, 2, 3, 1, 2, 3}
+   Note: the variadic arguments are always read as integers! */
+#define vector_select(v, ...)
 ```
 
 ### Null pointer safety
 
 Most of these may be called with `v` being a null pointer, in this case they will either
 
-- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`, `vector_idx_valid`, `vector_at`, `vector_slice`
+- Return `0`/`NULL`: `vector_size`, `vector_capacity`, `vector_end`, `vector_copy_construct`, `vector_idx_valid`, `vector_at`, `vector_slice`, `vector_select`
 
 - Return `1`: `vector_empty`
 
