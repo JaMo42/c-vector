@@ -10,6 +10,8 @@
 
 #define ITERATIONS 20
 
+#define signof(n) (((n) > 0) - ((n) < 0))
+
 struct MyStruct
 {
   int i;
@@ -116,6 +118,35 @@ su_module (vector_tests, {
     vector_reserve (v, 20);
     su_assert (vector_capacity (v) >= 20);
     vector_free (v);
+  })
+
+  su_test ("vector_compare", {
+    {
+      VECTOR(char) a = vector_init ((char)'a');
+      VECTOR(char) ab = vector_init ((char)'a', 'b');
+      VECTOR(char) b = vector_init ((char)'b');
+      su_assert (vector_compare (a, a) == 0);
+      su_assert (vector_compare (a, b) < 0);
+      su_assert (vector_compare (b, a) > 0);
+      su_assert (vector_compare (a, ab) < 0);
+      vector_free (a);
+      vector_free (ab);
+      vector_free (b);
+    }
+    {
+      VECTOR(long double) a = vector_init ((long double)1, 2, 3, 4, 5);
+      VECTOR(long double) b = vector_clone (a);
+      su_assert_eq (vector_compare (a, b), 0)
+      vector_free (a);
+      vector_free (b);
+    }
+    {
+      VECTOR(int) v = vector_init (1, 2, 3);
+      su_assert (vector_compare (v, NULL) > 0);
+      su_assert (vector_compare (NULL, v) < 0);
+      su_assert (vector_compare (NULL, NULL) == 0);
+      vector_free (v);
+    }
   })
 
   su_test("vector_push", {

@@ -69,7 +69,7 @@ struct vector__header {
 /* Ensure that the vector can fit N more items, grow it if necessary. */
 #define vector__maybegrow(v, n) (vector__needgrow((v), (n)) ? vector__grow((v), (n)) : 0)
 
-/* Same as `T *`, to better document source code. */
+/* Same as `T *`, represents a owned vector. */
 #define VECTOR(T) T *
 
 /* Gets the number of elements in the vector. */
@@ -117,6 +117,11 @@ struct vector__header {
 /* Gets a pointer past the last element of the vector. */
 #define vector_end(v)\
   ((v) == NULL ? NULL : ((v) + vector__size(v)))
+
+/* Compares two vector byte-wise.
+   Behaves like `strcmp` on a null-terminated version of the vectors data. */
+#define vector_compare(v1, v2)\
+  vector__compare ((v1), (v2), sizeof (*(v1)), sizeof (*(v2)))
 
 /* Appends an element to the vector. */
 #define vector_push(v, e)        \
@@ -316,6 +321,18 @@ vector__copy (struct vector__header *dest, struct vector__header *source,
                                              elem_size));
   dest->size = source->size;
   return memcpy (dest->data, source->data, source->size * elem_size);
+}
+
+VECTOR__MAYBE_UNUSED static int
+vector__compare (const void *a, const void *b,
+                 size_t elem_size_a, size_t elem_size_b)
+{
+  const size_t a_size = vector_size (a) * elem_size_a;
+  const size_t b_size = vector_size (b) * elem_size_b;
+  const int cmp = memcmp (a, b, a_size < b_size ? a_size : b_size);
+  if (cmp == 0)
+    return (a_size > b_size) - (b_size > a_size);
+  return cmp;
 }
 
 VECTOR__MAYBE_UNUSED static void *

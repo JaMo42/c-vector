@@ -1,4 +1,4 @@
-cc = clang
+cc ?= clang
 cc_opts = -Wall -Wextra -g
 
 PREFIX ?= /usr/local

@@ -88,6 +88,10 @@ This is used to be clear about something being a vector and not just a pointer i
 /* Gets a pointer past the last element of the vector. */
 #define vector_end(v)
 
+/* Compares two vector byte-wise.
+   Behaves like `strcmp` on a null-terminated version of the vectors data. */
+#define vector_compare(v1, v2)
+
 /* Appends an element to the vector. */
 #define vector_push(v, e)
 
@@ -163,6 +167,8 @@ Most of these may be called with `v` being a null pointer, in this case they wil
 The only exceptions are `vector_back` and `vector_pop` which will cause a segmentation fault.
 
 `vector_idx (NULL, -n)` will result in `(size_t)-n` (overflows into a huge number).
+
+For `vector_compare` and `other` in `vector_push_vector`, `NULL` is just an empty vector.
 
 ### Availability
 
