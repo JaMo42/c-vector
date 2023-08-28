@@ -1,7 +1,9 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include "smallunit.h"
+#define VECTOR_IMPLEMENTATION
 #include "vector.h"
+#define VECTOR_IMPLEMENTATION
 #include "static_vector.h"
 
 #ifdef __clang__

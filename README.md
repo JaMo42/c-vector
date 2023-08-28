@@ -10,6 +10,7 @@ Adds some more functionality known from c++ `std::vector`, mainly the ability to
 
 ```c
 #include <stdio.h>
+#define VECTOR_IMPLEMENTATION
 #include "vector.h"
 
 int
@@ -34,6 +35,20 @@ Output:
 ```
 v = { 7, 5, 16, 8, 25, 13, }
 ```
+
+### Implementation
+
+`VECTOR_IMPLEMENTATION` must be defined in one source file to define the functions.
+
+Note: you can still include multiple files that include the `vector.h` header after this macro:
+
+```c
+#define VECTOR_IMPLEMENTATION
+#include "vector.h"
+#include "other_file_that_also_includes_vector.h"
+```
+
+And the implementation will only be triggered by the first inclusion.
 
 ### Types
 

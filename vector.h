@@ -29,18 +29,6 @@ struct vector__header {
 # endif /* __cplusplus */
 #endif /* VECTOR__DECLTYPE */
 
-#ifndef VECTOR__MAYBE_UNSUED
-# ifdef __cplusplus
-#  define VECTOR__MAYBE_UNUSED [[maybe_unused]]
-# else /* __cplusplus */
-#  ifdef __GNUC__
-#   define VECTOR__MAYBE_UNUSED __attribute__((unused))
-#  else /* __GNUC__ */
-#   define VECTOR__MAYBE_UNUSED
-#  endif /* __GNUC__ */
-# endif /* __cplusplus */
-#endif /* VECTOR__MAYBE_UNUSED */
-
 #ifndef VECTOR__HAS_STATEMENT_EXPRS
 # ifdef __GNUC__
 #  define VECTOR__HAS_STATEMENT_EXPRS
@@ -278,8 +266,28 @@ struct vector__header {
                      the size, second to do the selection. */              \
                   __VA_ARGS__, INT_MIN, __VA_ARGS__, INT_MIN)
 
+void* vector__resize_impl(void *data, size_t elems, size_t elem_size);
+void* vector__grow_impl(void *data, size_t size, size_t elem_size);
+void vector__shift(char *data, size_t index, long diff, size_t elem_size);
+void* vector__create(size_t capacity, size_t elem_size);
+void* vector__create_with_size (size_t capacity, size_t elem_size, size_t size);
+void* vector__copy (struct vector__header *dest, struct vector__header *source,
+                    size_t elem_size);
+int vector__compare (const void *a, const void *b,
+                     size_t elem_size_a, size_t elem_size_b);
+void* vector__slice (const void *data, size_t elem_size, size_t size,
+                     ptrdiff_t begin, ptrdiff_t end);
+void* vector__select (const void *data, size_t elem_size, size_t size, ...);
 
-VECTOR__MAYBE_UNUSED static void *
+#endif /* !VECTOR_H */
+
+
+
+#ifdef VECTOR_IMPLEMENTATION
+#ifndef VECTOR__IMPLEMENTED
+#define VECTOR__IMPLEMENTED
+
+inline void *
 vector__resize_impl(void *data, size_t elems, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)realloc (
     data ? vector__get (data) : NULL,
@@ -300,7 +308,7 @@ vector__resize_impl(void *data, size_t elems, size_t elem_size) {
     }
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__grow_impl(void *data, size_t size, size_t elem_size) {
   size_t min_needed = vector_size (data) + size;
   size_t default_growth = data ? (vector__capacity (data) << 1) : 16;
@@ -310,14 +318,14 @@ vector__grow_impl(void *data, size_t size, size_t elem_size) {
   return vector__resize_impl (data, new_capacity, elem_size);
 }
 
-VECTOR__MAYBE_UNUSED static void
+inline void
 vector__shift(char *data, size_t index, long diff, size_t elem_size) {
   char *at = data + index * elem_size;
   size_t count = vector__size (data) - index;
   memmove (at + diff * elem_size, at, count * elem_size);
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__create(size_t capacity, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)malloc(
     capacity * elem_size + sizeof (struct vector__header));
@@ -326,7 +334,7 @@ vector__create(size_t capacity, size_t elem_size) {
   return (void *)v->data;
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__create_with_size (size_t capacity, size_t elem_size, size_t size) {
   struct vector__header *v = (struct vector__header *)malloc(
     capacity * elem_size + sizeof (struct vector__header));
@@ -335,7 +343,7 @@ vector__create_with_size (size_t capacity, size_t elem_size, size_t size) {
   return (void *)v->data;
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__copy (struct vector__header *dest, struct vector__header *source,
               size_t elem_size)
 {
@@ -346,7 +354,7 @@ vector__copy (struct vector__header *dest, struct vector__header *source,
   return memcpy (dest->data, source->data, source->size * elem_size);
 }
 
-VECTOR__MAYBE_UNUSED static int
+inline int
 vector__compare (const void *a, const void *b,
                  size_t elem_size_a, size_t elem_size_b)
 {
@@ -358,7 +366,7 @@ vector__compare (const void *a, const void *b,
   return cmp;
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__slice (const void *data, size_t elem_size, size_t size,
                ptrdiff_t begin, ptrdiff_t end)
 {
@@ -390,7 +398,7 @@ vector__slice (const void *data, size_t elem_size, size_t size,
                  len * elem_size);
 }
 
-VECTOR__MAYBE_UNUSED static void *
+inline void *
 vector__select (const void *data, size_t elem_size, size_t size, ...)
 {
   int count = 0, idx;
@@ -414,4 +422,5 @@ vector__select (const void *data, size_t elem_size, size_t size, ...)
   return result;
 }
 
-#endif /* !VECTOR_H */
+#endif /* VECTOR__IMPLEMENTED */
+#endif /* VECTOR_IMPLEMENTATION */

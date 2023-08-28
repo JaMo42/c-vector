@@ -34,9 +34,18 @@
 #define vector_static_size(v)\
   (VECTOR__HEAD_SPACE (VECTOR__DECLTYPE (*v)) + vector__capacity (v))
 
+void* vector__create_static (void *buf, size_t elem_size, size_t buf_size,
+                             size_t head_space);
+
+#endif
 
 
-VECTOR__MAYBE_UNUSED static void *
+
+#ifdef VECTOR_IMPLEMENTATION
+#ifndef VECTOR__STATIC_IMPLEMENTED
+#define VECTOR__STATIC_IMPLEMENTED
+
+inline void *
 vector__create_static (void *buf, size_t elem_size, size_t buf_size, size_t head_space)
 {
   struct vector__header *head = (struct vector__header *)((char*)buf + head_space);
@@ -45,5 +54,5 @@ vector__create_static (void *buf, size_t elem_size, size_t buf_size, size_t head
   return (void *)head->data;
 }
 
-#endif
-
+#endif /* VECTOR__STATIC_IMPLEMENTED */
+#endif /* VECTOR_IMPLEMENTATION */
