@@ -11,6 +11,18 @@
 #include <stdint.h>
 #include <limits.h>
 
+#ifndef VECTOR_MALLOC
+#define VECTOR_MALLOC malloc
+#endif
+
+#ifndef VECTOR_FREE
+#define VECTOR_FREE free
+#endif
+
+#ifndef VECTOR_REALLOC
+#define VECTOR_REALLOC realloc
+#endif
+
 struct vector__header {
   size_t size;
   size_t capacity;
@@ -209,7 +221,7 @@ struct vector__header {
 
 /* Frees the vector. */
 #define vector_free(v)\
-  ((v) ? (free(vector__get(v)), 0) : 0)
+  ((v) ? (VECTOR_FREE(vector__get(v)), 0) : 0)
 
 /* Create a new vector with the same elements as the input vector */
 #define vector_clone(v)                                           \
@@ -289,7 +301,7 @@ void* vector__select (const void *data, size_t elem_size, size_t size, ...);
 
 inline void *
 vector__resize_impl(void *data, size_t elems, size_t elem_size) {
-  struct vector__header *v = (struct vector__header *)realloc (
+  struct vector__header *v = (struct vector__header *)VECTOR_REALLOC (
     data ? vector__get (data) : NULL,
     elems * elem_size + sizeof (struct vector__header));
   if (v)
@@ -327,7 +339,7 @@ vector__shift(char *data, size_t index, long diff, size_t elem_size) {
 
 inline void *
 vector__create(size_t capacity, size_t elem_size) {
-  struct vector__header *v = (struct vector__header *)malloc(
+  struct vector__header *v = (struct vector__header *)VECTOR_MALLOC(
     capacity * elem_size + sizeof (struct vector__header));
   v->size = 0;
   v->capacity = capacity;
@@ -336,7 +348,7 @@ vector__create(size_t capacity, size_t elem_size) {
 
 inline void *
 vector__create_with_size (size_t capacity, size_t elem_size, size_t size) {
-  struct vector__header *v = (struct vector__header *)malloc(
+  struct vector__header *v = (struct vector__header *)VECTOR_MALLOC(
     capacity * elem_size + sizeof (struct vector__header));
   v->size = size;
   v->capacity = capacity;
