@@ -12,15 +12,15 @@
 #include <limits.h>
 
 #ifndef VECTOR_MALLOC
-#define VECTOR_MALLOC malloc
+#define VECTOR_MALLOC(_size) malloc(_size)
 #endif
 
 #ifndef VECTOR_FREE
-#define VECTOR_FREE free
+#define VECTOR_FREE(_ptr, _size) free(_ptr)
 #endif
 
 #ifndef VECTOR_REALLOC
-#define VECTOR_REALLOC realloc
+#define VECTOR_REALLOC(_ptr, _old_size, _new_size) realloc(_ptr, _new_size)
 #endif
 
 struct vector__header {
@@ -220,8 +220,14 @@ struct vector__header {
           (n) * sizeof(*(p)))
 
 /* Frees the vector. */
-#define vector_free(v)\
-  ((v) ? (VECTOR_FREE(vector__get(v)), 0) : 0)
+#define vector_free(v)                                                          \
+    ((v)                                                                        \
+     ? (VECTOR_FREE(                                                            \
+          vector__get(v),                                                       \
+          vector__get(v)->capacity * sizeof(*v) + sizeof(struct vector__header) \
+        ),                                                                      \
+        0)                                                                      \
+     : 0)
 
 /* Create a new vector with the same elements as the input vector */
 #define vector_clone(v)                                           \
@@ -303,6 +309,7 @@ inline void *
 vector__resize_impl(void *data, size_t elems, size_t elem_size) {
   struct vector__header *v = (struct vector__header *)VECTOR_REALLOC (
     data ? vector__get (data) : NULL,
+    data ? vector__capacity (data) * elem_size + sizeof (struct vector__header) : 0,
     elems * elem_size + sizeof (struct vector__header));
   if (v)
     {
