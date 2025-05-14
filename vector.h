@@ -154,7 +154,7 @@ struct vector__header {
 
 /* Inserts a new element into the vector at position I. */
 #define vector_insert(v, i, e)                                \
-  (((v) == NULL || (size_t)(i) >= vector_size(v))             \
+  (((size_t)(i) > vector_size(v))                             \
    ? 0                                                        \
    : (vector__maybegrow((v), 1),                              \
       vector__shift((char*)(void*)(v), (i), 1, sizeof(*(v))), \
@@ -164,7 +164,7 @@ struct vector__header {
 #ifdef VECTOR__DECLTYPE
 /* Like vector_emplace_back but the new element is inserted at position I. */
 #define vector_emplace(v, i, ...)                                 \
-  (((v) == NULL || (size_t)(i) >= (vector__size (v)))             \
+  (((size_t)(i) > (vector__size (v)))                             \
    ? 0                                                            \
    : (vector__maybegrow ((v), 1),                                 \
       vector__shift ((char *)(void *)(v), (i), 1, sizeof (*(v))), \

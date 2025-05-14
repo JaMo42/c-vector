@@ -198,6 +198,15 @@ su_module (vector_tests, {
     su_assert_eq(ivec[10], 30);
     su_assert_eq(ivec[5], 20);
     su_assert_eq(ivec[2], 10);
+
+    size_t index = vector_size(ivec);
+    vector_insert(ivec, index, 123);
+    su_assert_eq(ivec[index], 123);
+
+    int *empty = NULL;
+    vector_insert(empty, 0, 1);
+    su_assert_eq(vector_size(empty), 1);
+    su_assert_eq(empty[0], 1);
   })
 
   su_test("vector_remove", {
